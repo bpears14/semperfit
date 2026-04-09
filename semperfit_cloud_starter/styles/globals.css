@@ -1,0 +1,52 @@
+html, body {
+  padding: 0;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0b1220;
+  color: #eef2ff;
+}
+* { box-sizing: border-box; }
+.wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.card {
+  width: 100%;
+  max-width: 480px;
+  background: #121a2b;
+  border: 1px solid #26324b;
+  border-radius: 16px;
+  padding: 24px;
+}
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: 1px solid #26324b;
+  background: #0c1526;
+  color: #eef2ff;
+}
+button {
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #7dd3fc;
+  color: #03141c;
+  font-weight: 700;
+}
+button.secondary {
+  background: #1e293b;
+  color: #eef2ff;
+}
+.row {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.muted {
+  color: #a7b0c4;
+}
