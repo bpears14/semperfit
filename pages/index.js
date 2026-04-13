@@ -6,6 +6,9 @@ const tabs = [
   { id: "workouts", label: "Workouts" },
   { id: "macros", label: "Macros" },
   { id: "weighins", label: "Weigh-Ins + Photos" },
+  { id: "peptides", label: "Peptides" },
+  { id: "inbody", label: "InBody" },
+  { id: "bloodwork", label: "Bloodwork" },
   { id: "timeline", label: "Timeline" }
 ];
 
