@@ -1,12 +1,8 @@
 {
-  "name": "semperfit-v3-full-tracker",
+  "name": "semperfit-v32-safe-full",
   "private": true,
-  "version": "0.3.0",
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
-  },
+  "version": "0.3.2",
+  "scripts": { "dev": "next dev", "build": "next build", "start": "next start" },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
     "next": "14.2.15",
