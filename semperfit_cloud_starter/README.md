@@ -1,17 +1,21 @@
-# SemperFit Cloud Starter
+# SemperFit Dashboard V2
 
-## 1. Install
-npm install
+This is the next version of your SemperFit cloud app.
 
-## 2. Create `.env.local`
-NEXT_PUBLIC_SUPABASE_URL=your_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+## Included
+- Login / sign out
+- Dashboard
+- Weigh-ins
+- Workouts placeholder
+- Macros placeholder
+- Timeline placeholder
 
-## 3. Run locally
-npm run dev
+## Deploy update
+Replace the files in your current GitHub repo with the files from this folder.
+Vercel will redeploy automatically.
 
-## 4. Push to GitHub
-Create a repo, then upload these files.
+## Environment variables
+Keep using the same values:
 
-## 5. Deploy to Vercel
-Import the repo into Vercel and add the same two environment variables.
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
