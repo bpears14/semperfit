@@ -71,13 +71,23 @@ export default function Home() {
   });
 
   const [inbody, setInbody] = useState({
-    scan_date: todayISO(),
-    weight: "",
-    body_fat: "",
-    muscle_mass: "",
-    visceral_fat: "",
-    notes: ""
-  });
+  scan_date: todayISO(),
+  weight: "",
+  skeletal_muscle_mass: "",
+  body_fat_mass: "",
+  percent_body_fat: "",
+  lean_body_mass: "",
+  bmi: "",
+  bmr: "",
+  ecw_tbw: "",
+  visceral_fat: "",
+  right_arm_lean: "",
+  left_arm_lean: "",
+  trunk_lean: "",
+  right_leg_lean: "",
+  left_leg_lean: "",
+  notes: ""
+});
 
   const [bloodwork, setBloodwork] = useState({
     panel_date: todayISO(),
@@ -396,48 +406,87 @@ export default function Home() {
   }
 
   async function saveInbody(e) {
-    e.preventDefault();
-    setMessage("");
+  e.preventDefault();
+  setMessage("");
 
-    try {
-      const pdfPath = await uploadToBucket(
-        "inbody-reports",
-        inbodyFile,
-        "reports"
-      );
+  try {
+    const imagePath = await uploadToBucket(
+      "inbody-reports",
+      inbodyFile,
+      "reports"
+    );
 
-      const { error } = await supabase.from("inbody_scans").insert({
-        user_id: session.user.id,
-        scan_date: inbody.scan_date,
-        weight: inbody.weight ? Number(inbody.weight) : null,
-        body_fat: inbody.body_fat ? Number(inbody.body_fat) : null,
-        muscle_mass: inbody.muscle_mass ? Number(inbody.muscle_mass) : null,
-        visceral_fat: inbody.visceral_fat ? Number(inbody.visceral_fat) : null,
-        inbody_pdf: pdfPath,
-        notes: inbody.notes || null
-      });
+    const { error } = await supabase.from("inbody_scans").insert({
+      user_id: session.user.id,
+      scan_date: inbody.scan_date,
+      weight: inbody.weight ? Number(inbody.weight) : null,
+      skeletal_muscle_mass: inbody.skeletal_muscle_mass
+        ? Number(inbody.skeletal_muscle_mass)
+        : null,
+      body_fat_mass: inbody.body_fat_mass
+        ? Number(inbody.body_fat_mass)
+        : null,
+      percent_body_fat: inbody.percent_body_fat
+        ? Number(inbody.percent_body_fat)
+        : null,
+      lean_body_mass: inbody.lean_body_mass
+        ? Number(inbody.lean_body_mass)
+        : null,
+      bmi: inbody.bmi ? Number(inbody.bmi) : null,
+      bmr: inbody.bmr ? Number(inbody.bmr) : null,
+      ecw_tbw: inbody.ecw_tbw ? Number(inbody.ecw_tbw) : null,
+      visceral_fat: inbody.visceral_fat
+        ? Number(inbody.visceral_fat)
+        : null,
+      right_arm_lean: inbody.right_arm_lean
+        ? Number(inbody.right_arm_lean)
+        : null,
+      left_arm_lean: inbody.left_arm_lean
+        ? Number(inbody.left_arm_lean)
+        : null,
+      trunk_lean: inbody.trunk_lean ? Number(inbody.trunk_lean) : null,
+      right_leg_lean: inbody.right_leg_lean
+        ? Number(inbody.right_leg_lean)
+        : null,
+      left_leg_lean: inbody.left_leg_lean
+        ? Number(inbody.left_leg_lean)
+        : null,
+      scan_image_url: imagePath,
+      inbody_pdf: imagePath,
+      notes: inbody.notes || null
+    });
 
-      if (error) {
-        setMessage(error.message);
-        return;
-      }
-
-      setInbody({
-        scan_date: todayISO(),
-        weight: "",
-        body_fat: "",
-        muscle_mass: "",
-        visceral_fat: "",
-        notes: ""
-      });
-
-      setInbodyFile(null);
-      setMessage("InBody scan saved.");
-      loadAll();
-    } catch (err) {
-      setMessage(err.message);
+    if (error) {
+      setMessage(error.message);
+      return;
     }
+
+    setInbody({
+      scan_date: todayISO(),
+      weight: "",
+      skeletal_muscle_mass: "",
+      body_fat_mass: "",
+      percent_body_fat: "",
+      lean_body_mass: "",
+      bmi: "",
+      bmr: "",
+      ecw_tbw: "",
+      visceral_fat: "",
+      right_arm_lean: "",
+      left_arm_lean: "",
+      trunk_lean: "",
+      right_leg_lean: "",
+      left_leg_lean: "",
+      notes: ""
+    });
+
+    setInbodyFile(null);
+    setMessage("InBody scan saved.");
+    loadAll();
+  } catch (err) {
+    setMessage(err.message);
   }
+}
 
   async function saveBloodwork(e) {
     e.preventDefault();
