@@ -71,23 +71,23 @@ export default function Home() {
   });
 
   const [inbody, setInbody] = useState({
-  scan_date: todayISO(),
-  weight: "",
-  skeletal_muscle_mass: "",
-  body_fat_mass: "",
-  percent_body_fat: "",
-  lean_body_mass: "",
-  bmi: "",
-  bmr: "",
-  ecw_tbw: "",
-  visceral_fat: "",
-  right_arm_lean: "",
-  left_arm_lean: "",
-  trunk_lean: "",
-  right_leg_lean: "",
-  left_leg_lean: "",
-  notes: ""
-});
+    scan_date: todayISO(),
+    weight: "",
+    skeletal_muscle_mass: "",
+    body_fat_mass: "",
+    percent_body_fat: "",
+    lean_body_mass: "",
+    bmi: "",
+    bmr: "",
+    ecw_tbw: "",
+    visceral_fat: "",
+    right_arm_lean: "",
+    left_arm_lean: "",
+    trunk_lean: "",
+    right_leg_lean: "",
+    left_leg_lean: "",
+    notes: ""
+  });
 
   const [bloodwork, setBloodwork] = useState({
     panel_date: todayISO(),
@@ -406,87 +406,87 @@ export default function Home() {
   }
 
   async function saveInbody(e) {
-  e.preventDefault();
-  setMessage("");
+    e.preventDefault();
+    setMessage("");
 
-  try {
-    const imagePath = await uploadToBucket(
-      "inbody-reports",
-      inbodyFile,
-      "reports"
-    );
+    try {
+      const imagePath = await uploadToBucket(
+        "inbody-reports",
+        inbodyFile,
+        "reports"
+      );
 
-    const { error } = await supabase.from("inbody_scans").insert({
-      user_id: session.user.id,
-      scan_date: inbody.scan_date,
-      weight: inbody.weight ? Number(inbody.weight) : null,
-      skeletal_muscle_mass: inbody.skeletal_muscle_mass
-        ? Number(inbody.skeletal_muscle_mass)
-        : null,
-      body_fat_mass: inbody.body_fat_mass
-        ? Number(inbody.body_fat_mass)
-        : null,
-      percent_body_fat: inbody.percent_body_fat
-        ? Number(inbody.percent_body_fat)
-        : null,
-      lean_body_mass: inbody.lean_body_mass
-        ? Number(inbody.lean_body_mass)
-        : null,
-      bmi: inbody.bmi ? Number(inbody.bmi) : null,
-      bmr: inbody.bmr ? Number(inbody.bmr) : null,
-      ecw_tbw: inbody.ecw_tbw ? Number(inbody.ecw_tbw) : null,
-      visceral_fat: inbody.visceral_fat
-        ? Number(inbody.visceral_fat)
-        : null,
-      right_arm_lean: inbody.right_arm_lean
-        ? Number(inbody.right_arm_lean)
-        : null,
-      left_arm_lean: inbody.left_arm_lean
-        ? Number(inbody.left_arm_lean)
-        : null,
-      trunk_lean: inbody.trunk_lean ? Number(inbody.trunk_lean) : null,
-      right_leg_lean: inbody.right_leg_lean
-        ? Number(inbody.right_leg_lean)
-        : null,
-      left_leg_lean: inbody.left_leg_lean
-        ? Number(inbody.left_leg_lean)
-        : null,
-      scan_image_url: imagePath,
-      inbody_pdf: imagePath,
-      notes: inbody.notes || null
-    });
+      const { error } = await supabase.from("inbody_scans").insert({
+        user_id: session.user.id,
+        scan_date: inbody.scan_date,
+        weight: inbody.weight ? Number(inbody.weight) : null,
+        skeletal_muscle_mass: inbody.skeletal_muscle_mass
+          ? Number(inbody.skeletal_muscle_mass)
+          : null,
+        body_fat_mass: inbody.body_fat_mass
+          ? Number(inbody.body_fat_mass)
+          : null,
+        percent_body_fat: inbody.percent_body_fat
+          ? Number(inbody.percent_body_fat)
+          : null,
+        lean_body_mass: inbody.lean_body_mass
+          ? Number(inbody.lean_body_mass)
+          : null,
+        bmi: inbody.bmi ? Number(inbody.bmi) : null,
+        bmr: inbody.bmr ? Number(inbody.bmr) : null,
+        ecw_tbw: inbody.ecw_tbw ? Number(inbody.ecw_tbw) : null,
+        visceral_fat: inbody.visceral_fat
+          ? Number(inbody.visceral_fat)
+          : null,
+        right_arm_lean: inbody.right_arm_lean
+          ? Number(inbody.right_arm_lean)
+          : null,
+        left_arm_lean: inbody.left_arm_lean
+          ? Number(inbody.left_arm_lean)
+          : null,
+        trunk_lean: inbody.trunk_lean ? Number(inbody.trunk_lean) : null,
+        right_leg_lean: inbody.right_leg_lean
+          ? Number(inbody.right_leg_lean)
+          : null,
+        left_leg_lean: inbody.left_leg_lean
+          ? Number(inbody.left_leg_lean)
+          : null,
+        scan_image_url: imagePath,
+        inbody_pdf: imagePath,
+        notes: inbody.notes || null
+      });
 
-    if (error) {
-      setMessage(error.message);
-      return;
+      if (error) {
+        setMessage(error.message);
+        return;
+      }
+
+      setInbody({
+        scan_date: todayISO(),
+        weight: "",
+        skeletal_muscle_mass: "",
+        body_fat_mass: "",
+        percent_body_fat: "",
+        lean_body_mass: "",
+        bmi: "",
+        bmr: "",
+        ecw_tbw: "",
+        visceral_fat: "",
+        right_arm_lean: "",
+        left_arm_lean: "",
+        trunk_lean: "",
+        right_leg_lean: "",
+        left_leg_lean: "",
+        notes: ""
+      });
+
+      setInbodyFile(null);
+      setMessage("InBody scan saved.");
+      loadAll();
+    } catch (err) {
+      setMessage(err.message);
     }
-
-    setInbody({
-      scan_date: todayISO(),
-      weight: "",
-      skeletal_muscle_mass: "",
-      body_fat_mass: "",
-      percent_body_fat: "",
-      lean_body_mass: "",
-      bmi: "",
-      bmr: "",
-      ecw_tbw: "",
-      visceral_fat: "",
-      right_arm_lean: "",
-      left_arm_lean: "",
-      trunk_lean: "",
-      right_leg_lean: "",
-      left_leg_lean: "",
-      notes: ""
-    });
-
-    setInbodyFile(null);
-    setMessage("InBody scan saved.");
-    loadAll();
-  } catch (err) {
-    setMessage(err.message);
   }
-}
 
   async function saveBloodwork(e) {
     e.preventDefault();
@@ -1018,43 +1018,147 @@ export default function Home() {
                 type="number"
                 step="0.1"
                 value={inbody.weight}
-                onChange={(e) => setInbody({ ...inbody, weight: e.target.value })}
-              />
-
-              <label>Body fat %</label>
-              <input
-                type="number"
-                step="0.1"
-                value={inbody.body_fat}
                 onChange={(e) =>
-                  setInbody({ ...inbody, body_fat: e.target.value })
+                  setInbody({ ...inbody, weight: e.target.value })
                 }
               />
 
-              <label>Muscle mass</label>
+              <label>Skeletal Muscle Mass</label>
               <input
                 type="number"
                 step="0.1"
-                value={inbody.muscle_mass}
+                value={inbody.skeletal_muscle_mass || ""}
                 onChange={(e) =>
-                  setInbody({ ...inbody, muscle_mass: e.target.value })
+                  setInbody({ ...inbody, skeletal_muscle_mass: e.target.value })
                 }
               />
 
-              <label>Visceral fat</label>
+              <label>Body Fat Mass</label>
               <input
                 type="number"
                 step="0.1"
-                value={inbody.visceral_fat}
+                value={inbody.body_fat_mass || ""}
+                onChange={(e) =>
+                  setInbody({ ...inbody, body_fat_mass: e.target.value })
+                }
+              />
+
+              <label>Percent Body Fat</label>
+              <input
+                type="number"
+                step="0.1"
+                value={inbody.percent_body_fat || ""}
+                onChange={(e) =>
+                  setInbody({ ...inbody, percent_body_fat: e.target.value })
+                }
+              />
+
+              <label>Lean Body Mass</label>
+              <input
+                type="number"
+                step="0.1"
+                value={inbody.lean_body_mass || ""}
+                onChange={(e) =>
+                  setInbody({ ...inbody, lean_body_mass: e.target.value })
+                }
+              />
+
+              <label>BMI</label>
+              <input
+                type="number"
+                step="0.1"
+                value={inbody.bmi || ""}
+                onChange={(e) =>
+                  setInbody({ ...inbody, bmi: e.target.value })
+                }
+              />
+
+              <label>BMR</label>
+              <input
+                type="number"
+                step="1"
+                value={inbody.bmr || ""}
+                onChange={(e) =>
+                  setInbody({ ...inbody, bmr: e.target.value })
+                }
+              />
+
+              <label>ECW/TBW</label>
+              <input
+                type="number"
+                step="0.001"
+                value={inbody.ecw_tbw || ""}
+                onChange={(e) =>
+                  setInbody({ ...inbody, ecw_tbw: e.target.value })
+                }
+              />
+
+              <label>Visceral Fat Level</label>
+              <input
+                type="number"
+                step="1"
+                value={inbody.visceral_fat || ""}
                 onChange={(e) =>
                   setInbody({ ...inbody, visceral_fat: e.target.value })
                 }
               />
 
+              <label>Right Arm Lean Mass</label>
+              <input
+                type="number"
+                step="0.1"
+                value={inbody.right_arm_lean || ""}
+                onChange={(e) =>
+                  setInbody({ ...inbody, right_arm_lean: e.target.value })
+                }
+              />
+
+              <label>Left Arm Lean Mass</label>
+              <input
+                type="number"
+                step="0.1"
+                value={inbody.left_arm_lean || ""}
+                onChange={(e) =>
+                  setInbody({ ...inbody, left_arm_lean: e.target.value })
+                }
+              />
+
+              <label>Trunk Lean Mass</label>
+              <input
+                type="number"
+                step="0.1"
+                value={inbody.trunk_lean || ""}
+                onChange={(e) =>
+                  setInbody({ ...inbody, trunk_lean: e.target.value })
+                }
+              />
+
+              <label>Right Leg Lean Mass</label>
+              <input
+                type="number"
+                step="0.1"
+                value={inbody.right_leg_lean || ""}
+                onChange={(e) =>
+                  setInbody({ ...inbody, right_leg_lean: e.target.value })
+                }
+              />
+
+              <label>Left Leg Lean Mass</label>
+              <input
+                type="number"
+                step="0.1"
+                value={inbody.left_leg_lean || ""}
+                onChange={(e) =>
+                  setInbody({ ...inbody, left_leg_lean: e.target.value })
+                }
+              />
+
               <label>Notes</label>
               <textarea
-                value={inbody.notes}
-                onChange={(e) => setInbody({ ...inbody, notes: e.target.value })}
+                value={inbody.notes || ""}
+                onChange={(e) =>
+                  setInbody({ ...inbody, notes: e.target.value })
+                }
               />
 
               <label>Upload scan image / PDF</label>
@@ -1082,7 +1186,9 @@ export default function Home() {
                         {item.weight ? `${item.weight} lb` : "No weight"}
                       </strong>
                       <span>
-                        BF {item.body_fat ?? "—"} · Muscle {item.muscle_mass ?? "—"} ·
+                        SMM {item.skeletal_muscle_mass ?? item.muscle_mass ?? "—"} ·
+                        PBF {item.percent_body_fat ?? item.body_fat ?? "—"} ·
+                        BFM {item.body_fat_mass ?? "—"} ·
                         Visceral {item.visceral_fat ?? "—"}
                       </span>
                       <small>{item.scan_date}</small>
