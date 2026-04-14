@@ -25,6 +25,90 @@ function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function safeNumber(value) {
+  if (value === "" || value === null || value === undefined) return null;
+  const num = Number(value);
+  return Number.isNaN(num) ? null : num;
+}
+
+function DetailRow({ label, value }) {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "180px 1fr",
+        gap: 12,
+        padding: "8px 0",
+        borderBottom: "1px solid rgba(255,255,255,.06)"
+      }}
+    >
+      <div className="muted">{label}</div>
+      <div>{value || "—"}</div>
+    </div>
+  );
+}
+
+function ExpandableHistoryCard({
+  title,
+  kicker,
+  items,
+  expandedId,
+  setExpandedId,
+  renderSummary,
+  renderExpanded,
+  getKey
+}) {
+  return (
+    <div className="card">
+      <div className="kicker">{kicker}</div>
+      <h2>{title}</h2>
+
+      {!items.length ? (
+        <div className="empty">No entries yet.</div>
+      ) : (
+        <div className="stack">
+          {items.map((item, index) => {
+            const key = getKey ? getKey(item, index) : item.id || index;
+            const isOpen = expandedId === key;
+
+            return (
+              <div
+                key={key}
+                style={{
+                  border: "1px solid rgba(255,255,255,.08)",
+                  borderRadius: 14,
+                  padding: 14,
+                  background: "rgba(255,255,255,.02)"
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setExpandedId(isOpen ? null : key)}
+                  style={{
+                    width: "100%",
+                    background: "transparent",
+                    border: "none",
+                    color: "inherit",
+                    padding: 0,
+                    textAlign: "left",
+                    cursor: "pointer"
+                  }}
+                >
+                  {renderSummary(item, isOpen)}
+                </button>
+
+                {isOpen ? (
+                  <div style={{ marginTop: 12 }}>{renderExpanded(item)}</div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Home() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -107,6 +191,14 @@ export default function Home() {
   const [inbodyRows, setInbodyRows] = useState([]);
   const [bloodworkRows, setBloodworkRows] = useState([]);
 
+  const [expandedWorkoutId, setExpandedWorkoutId] = useState(null);
+  const [expandedMacroId, setExpandedMacroId] = useState(null);
+  const [expandedWeighInId, setExpandedWeighInId] = useState(null);
+  const [expandedPeptideId, setExpandedPeptideId] = useState(null);
+  const [expandedInbodyId, setExpandedInbodyId] = useState(null);
+  const [expandedBloodworkId, setExpandedBloodworkId] = useState(null);
+  const [expandedTimelineId, setExpandedTimelineId] = useState(null);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
@@ -167,56 +259,56 @@ export default function Home() {
         .select("*")
         .eq("user_id", userId)
         .order("workout_date", { ascending: false })
-        .limit(25),
+        .limit(50),
 
       supabase
         .from("nutrition_logs")
         .select("*")
         .eq("user_id", userId)
         .order("log_date", { ascending: false })
-        .limit(25),
+        .limit(50),
 
       supabase
         .from("weigh_ins")
         .select("*")
         .eq("user_id", userId)
         .order("weigh_in_date", { ascending: false })
-        .limit(25),
+        .limit(50),
 
       supabase
         .from("progress_photos")
         .select("*")
         .eq("user_id", userId)
         .order("photo_date", { ascending: false })
-        .limit(25),
+        .limit(50),
 
       supabase
         .from("timeline_events")
         .select("*")
         .eq("user_id", userId)
         .order("date", { ascending: false })
-        .limit(50),
+        .limit(100),
 
       supabase
         .from("peptide_logs")
         .select("*")
         .eq("user_id", userId)
         .order("log_date", { ascending: false })
-        .limit(25),
+        .limit(50),
 
       supabase
         .from("inbody_scans")
         .select("*")
         .eq("user_id", userId)
         .order("scan_date", { ascending: false })
-        .limit(25),
+        .limit(50),
 
       supabase
         .from("bloodwork_panels")
         .select("*")
         .eq("user_id", userId)
         .order("panel_date", { ascending: false })
-        .limit(25)
+        .limit(50)
     ]);
 
     setWorkouts(workoutsRes.data || []);
@@ -252,9 +344,7 @@ export default function Home() {
       user_id: session.user.id,
       workout_date: workout.workout_date,
       workout_type: workout.workout_type,
-      duration_minutes: workout.duration_minutes
-        ? Number(workout.duration_minutes)
-        : null,
+      duration_minutes: safeNumber(workout.duration_minutes),
       notes: workout.notes || null
     });
 
@@ -281,10 +371,10 @@ export default function Home() {
     const { error } = await supabase.from("nutrition_logs").insert({
       user_id: session.user.id,
       log_date: macro.log_date,
-      calories: macro.calories ? Number(macro.calories) : null,
-      protein: macro.protein ? Number(macro.protein) : null,
-      carbs: macro.carbs ? Number(macro.carbs) : null,
-      fat: macro.fat ? Number(macro.fat) : null
+      calories: safeNumber(macro.calories),
+      protein: safeNumber(macro.protein),
+      carbs: safeNumber(macro.carbs),
+      fat: safeNumber(macro.fat)
     });
 
     if (error) {
@@ -311,7 +401,7 @@ export default function Home() {
     const { error: weightError } = await supabase.from("weigh_ins").insert({
       user_id: session.user.id,
       weigh_in_date: checkin.weigh_in_date,
-      weight_lb: checkin.weight_lb ? Number(checkin.weight_lb) : null,
+      weight_lb: safeNumber(checkin.weight_lb),
       notes: checkin.notes || null
     });
 
@@ -419,38 +509,20 @@ export default function Home() {
       const { error } = await supabase.from("inbody_scans").insert({
         user_id: session.user.id,
         scan_date: inbody.scan_date,
-        weight: inbody.weight ? Number(inbody.weight) : null,
-        skeletal_muscle_mass: inbody.skeletal_muscle_mass
-          ? Number(inbody.skeletal_muscle_mass)
-          : null,
-        body_fat_mass: inbody.body_fat_mass
-          ? Number(inbody.body_fat_mass)
-          : null,
-        percent_body_fat: inbody.percent_body_fat
-          ? Number(inbody.percent_body_fat)
-          : null,
-        lean_body_mass: inbody.lean_body_mass
-          ? Number(inbody.lean_body_mass)
-          : null,
-        bmi: inbody.bmi ? Number(inbody.bmi) : null,
-        bmr: inbody.bmr ? Number(inbody.bmr) : null,
-        ecw_tbw: inbody.ecw_tbw ? Number(inbody.ecw_tbw) : null,
-        visceral_fat: inbody.visceral_fat
-          ? Number(inbody.visceral_fat)
-          : null,
-        right_arm_lean: inbody.right_arm_lean
-          ? Number(inbody.right_arm_lean)
-          : null,
-        left_arm_lean: inbody.left_arm_lean
-          ? Number(inbody.left_arm_lean)
-          : null,
-        trunk_lean: inbody.trunk_lean ? Number(inbody.trunk_lean) : null,
-        right_leg_lean: inbody.right_leg_lean
-          ? Number(inbody.right_leg_lean)
-          : null,
-        left_leg_lean: inbody.left_leg_lean
-          ? Number(inbody.left_leg_lean)
-          : null,
+        weight: safeNumber(inbody.weight),
+        skeletal_muscle_mass: safeNumber(inbody.skeletal_muscle_mass),
+        body_fat_mass: safeNumber(inbody.body_fat_mass),
+        percent_body_fat: safeNumber(inbody.percent_body_fat),
+        lean_body_mass: safeNumber(inbody.lean_body_mass),
+        bmi: safeNumber(inbody.bmi),
+        bmr: safeNumber(inbody.bmr),
+        ecw_tbw: safeNumber(inbody.ecw_tbw),
+        visceral_fat: safeNumber(inbody.visceral_fat),
+        right_arm_lean: safeNumber(inbody.right_arm_lean),
+        left_arm_lean: safeNumber(inbody.left_arm_lean),
+        trunk_lean: safeNumber(inbody.trunk_lean),
+        right_leg_lean: safeNumber(inbody.right_leg_lean),
+        left_leg_lean: safeNumber(inbody.left_leg_lean),
         scan_image_url: imagePath,
         inbody_pdf: imagePath,
         notes: inbody.notes || null
@@ -604,6 +676,13 @@ export default function Home() {
     );
   }
 
+  const photosByDate = {};
+  for (const photo of photos) {
+    if (photo?.photo_date && !photosByDate[photo.photo_date]) {
+      photosByDate[photo.photo_date] = photo;
+    }
+  }
+
   return (
     <main className="appShell">
       <aside className="sidebar">
@@ -676,6 +755,9 @@ export default function Home() {
                   <li>Macros save to Supabase</li>
                   <li>Weigh-ins save to Supabase</li>
                   <li>Front / side / back photos upload to storage</li>
+                  <li>Peptides save to Supabase</li>
+                  <li>InBody saves to Supabase</li>
+                  <li>Bloodwork uploads save to Supabase</li>
                   <li>Timeline reads from your database view</li>
                 </ul>
               </div>
@@ -732,29 +814,34 @@ export default function Home() {
               </button>
             </form>
 
-            <div className="card">
-              <div className="kicker">History</div>
-              <h2>Recent workouts</h2>
-
-              {!workouts.length ? (
-                <div className="empty">No workouts yet.</div>
-              ) : (
-                <div className="stack">
-                  {workouts.map((item) => (
-                    <div className="listRow" key={item.id}>
-                      <strong>{item.workout_type}</strong>
-                      <span>
-                        {item.notes || "No notes"}
-                        {item.duration_minutes
-                          ? ` · ${item.duration_minutes} min`
-                          : ""}
-                      </span>
-                      <small>{item.workout_date}</small>
-                    </div>
-                  ))}
+            <ExpandableHistoryCard
+              title="Recent workouts"
+              kicker="History"
+              items={workouts}
+              expandedId={expandedWorkoutId}
+              setExpandedId={setExpandedWorkoutId}
+              renderSummary={(item, isOpen) => (
+                <div className="listRow" style={{ borderBottom: "none", padding: 0 }}>
+                  <strong>{item.workout_type || "Workout"}</strong>
+                  <span>
+                    {item.duration_minutes ? `${item.duration_minutes} min` : "No duration"}
+                    {item.notes ? ` · ${item.notes.slice(0, 40)}` : ""}
+                  </span>
+                  <small>{isOpen ? "Hide" : item.workout_date}</small>
                 </div>
               )}
-            </div>
+              renderExpanded={(item) => (
+                <>
+                  <DetailRow label="Date" value={item.workout_date} />
+                  <DetailRow label="Workout type" value={item.workout_type} />
+                  <DetailRow
+                    label="Duration"
+                    value={item.duration_minutes ? `${item.duration_minutes} min` : null}
+                  />
+                  <DetailRow label="Notes" value={item.notes} />
+                </>
+              )}
+            />
           </div>
         )}
 
@@ -805,27 +892,31 @@ export default function Home() {
               </button>
             </form>
 
-            <div className="card">
-              <div className="kicker">History</div>
-              <h2>Recent macro logs</h2>
-
-              {!macros.length ? (
-                <div className="empty">No macro logs yet.</div>
-              ) : (
-                <div className="stack">
-                  {macros.map((item) => (
-                    <div className="listRow" key={item.id}>
-                      <strong>{item.calories || 0} cal</strong>
-                      <span>
-                        P {item.protein || 0} · C {item.carbs || 0} · F{" "}
-                        {item.fat || 0}
-                      </span>
-                      <small>{item.log_date}</small>
-                    </div>
-                  ))}
+            <ExpandableHistoryCard
+              title="Recent macro logs"
+              kicker="History"
+              items={macros}
+              expandedId={expandedMacroId}
+              setExpandedId={setExpandedMacroId}
+              renderSummary={(item, isOpen) => (
+                <div className="listRow" style={{ borderBottom: "none", padding: 0 }}>
+                  <strong>{item.calories || 0} cal</strong>
+                  <span>
+                    P {item.protein || 0} · C {item.carbs || 0} · F {item.fat || 0}
+                  </span>
+                  <small>{isOpen ? "Hide" : item.log_date}</small>
                 </div>
               )}
-            </div>
+              renderExpanded={(item) => (
+                <>
+                  <DetailRow label="Date" value={item.log_date} />
+                  <DetailRow label="Calories" value={item.calories} />
+                  <DetailRow label="Protein" value={item.protein} />
+                  <DetailRow label="Carbs" value={item.carbs} />
+                  <DetailRow label="Fat" value={item.fat} />
+                </>
+              )}
+            />
           </div>
         )}
 
@@ -890,24 +981,46 @@ export default function Home() {
               </button>
             </form>
 
-            <div className="card">
-              <div className="kicker">History</div>
-              <h2>Recent weigh-ins</h2>
-
-              {!weights.length ? (
-                <div className="empty">No weigh-ins yet.</div>
-              ) : (
-                <div className="stack">
-                  {weights.map((item) => (
-                    <div className="listRow" key={item.id}>
-                      <strong>{item.weight_lb ? `${item.weight_lb} lb` : "—"}</strong>
-                      <span>{item.notes || "No notes"}</span>
-                      <small>{item.weigh_in_date}</small>
-                    </div>
-                  ))}
+            <ExpandableHistoryCard
+              title="Recent weigh-ins"
+              kicker="History"
+              items={weights}
+              expandedId={expandedWeighInId}
+              setExpandedId={setExpandedWeighInId}
+              renderSummary={(item, isOpen) => (
+                <div className="listRow" style={{ borderBottom: "none", padding: 0 }}>
+                  <strong>{item.weight_lb ? `${item.weight_lb} lb` : "—"}</strong>
+                  <span>{item.notes || "No notes"}</span>
+                  <small>{isOpen ? "Hide" : item.weigh_in_date}</small>
                 </div>
               )}
-            </div>
+              renderExpanded={(item) => {
+                const photoSet = photosByDate[item.weigh_in_date] || null;
+
+                return (
+                  <>
+                    <DetailRow label="Date" value={item.weigh_in_date} />
+                    <DetailRow
+                      label="Weight"
+                      value={item.weight_lb ? `${item.weight_lb} lb` : null}
+                    />
+                    <DetailRow label="Notes" value={item.notes} />
+                    <DetailRow
+                      label="Front photo"
+                      value={photoSet?.front_photo || "No file"}
+                    />
+                    <DetailRow
+                      label="Side photo"
+                      value={photoSet?.side_photo || "No file"}
+                    />
+                    <DetailRow
+                      label="Back photo"
+                      value={photoSet?.back_photo || "No file"}
+                    />
+                  </>
+                );
+              }}
+            />
           </div>
         )}
 
@@ -973,27 +1086,28 @@ export default function Home() {
               </button>
             </form>
 
-            <div className="card">
-              <div className="kicker">History</div>
-              <h2>Recent peptide logs</h2>
-
-              {!peptides.length ? (
-                <div className="empty">No peptide logs yet.</div>
-              ) : (
-                <div className="stack">
-                  {peptides.map((item) => (
-                    <div className="listRow" key={item.id}>
-                      <strong>{item.peptide_name || "Peptide"}</strong>
-                      <span>
-                        {item.dose || "No dose"}
-                        {item.notes ? ` · ${item.notes}` : ""}
-                      </span>
-                      <small>{item.log_date}</small>
-                    </div>
-                  ))}
+            <ExpandableHistoryCard
+              title="Recent peptide logs"
+              kicker="History"
+              items={peptides}
+              expandedId={expandedPeptideId}
+              setExpandedId={setExpandedPeptideId}
+              renderSummary={(item, isOpen) => (
+                <div className="listRow" style={{ borderBottom: "none", padding: 0 }}>
+                  <strong>{item.peptide_name || "Peptide"}</strong>
+                  <span>{item.dose || "No dose"}</span>
+                  <small>{isOpen ? "Hide" : item.log_date}</small>
                 </div>
               )}
-            </div>
+              renderExpanded={(item) => (
+                <>
+                  <DetailRow label="Date" value={item.log_date} />
+                  <DetailRow label="Compound" value={item.peptide_name} />
+                  <DetailRow label="Dose" value={item.dose} />
+                  <DetailRow label="Full notes" value={item.notes} />
+                </>
+              )}
+            />
           </div>
         )}
 
@@ -1172,31 +1286,67 @@ export default function Home() {
               </button>
             </form>
 
-            <div className="card">
-              <div className="kicker">History</div>
-              <h2>Recent InBody scans</h2>
-
-              {!inbodyRows.length ? (
-                <div className="empty">No InBody scans yet.</div>
-              ) : (
-                <div className="stack">
-                  {inbodyRows.map((item) => (
-                    <div className="listRow" key={item.id}>
-                      <strong>
-                        {item.weight ? `${item.weight} lb` : "No weight"}
-                      </strong>
-                      <span>
-                        SMM {item.skeletal_muscle_mass ?? item.muscle_mass ?? "—"} ·
-                        PBF {item.percent_body_fat ?? item.body_fat ?? "—"} ·
-                        BFM {item.body_fat_mass ?? "—"} ·
-                        Visceral {item.visceral_fat ?? "—"}
-                      </span>
-                      <small>{item.scan_date}</small>
-                    </div>
-                  ))}
+            <ExpandableHistoryCard
+              title="Recent InBody scans"
+              kicker="History"
+              items={inbodyRows}
+              expandedId={expandedInbodyId}
+              setExpandedId={setExpandedInbodyId}
+              renderSummary={(item, isOpen) => (
+                <div className="listRow" style={{ borderBottom: "none", padding: 0 }}>
+                  <strong>{item.weight ? `${item.weight} lb` : "No weight"}</strong>
+                  <span>
+                    SMM {item.skeletal_muscle_mass ?? item.muscle_mass ?? "—"} ·
+                    PBF {item.percent_body_fat ?? item.body_fat ?? "—"} ·
+                    BFM {item.body_fat_mass ?? "—"} ·
+                    Visceral {item.visceral_fat ?? "—"}
+                  </span>
+                  <small>{isOpen ? "Hide" : item.scan_date}</small>
                 </div>
               )}
-            </div>
+              renderExpanded={(item) => (
+                <>
+                  <DetailRow label="Scan date" value={item.scan_date} />
+                  <DetailRow
+                    label="Weight"
+                    value={item.weight ? `${item.weight} lb` : null}
+                  />
+                  <DetailRow
+                    label="Skeletal Muscle Mass"
+                    value={item.skeletal_muscle_mass ?? item.muscle_mass}
+                  />
+                  <DetailRow
+                    label="Body Fat Mass"
+                    value={item.body_fat_mass}
+                  />
+                  <DetailRow
+                    label="Percent Body Fat"
+                    value={item.percent_body_fat ?? item.body_fat}
+                  />
+                  <DetailRow
+                    label="Lean Body Mass"
+                    value={item.lean_body_mass}
+                  />
+                  <DetailRow label="BMI" value={item.bmi} />
+                  <DetailRow label="BMR" value={item.bmr} />
+                  <DetailRow label="ECW/TBW" value={item.ecw_tbw} />
+                  <DetailRow
+                    label="Visceral Fat Level"
+                    value={item.visceral_fat}
+                  />
+                  <DetailRow label="Right Arm Lean" value={item.right_arm_lean} />
+                  <DetailRow label="Left Arm Lean" value={item.left_arm_lean} />
+                  <DetailRow label="Trunk Lean" value={item.trunk_lean} />
+                  <DetailRow label="Right Leg Lean" value={item.right_leg_lean} />
+                  <DetailRow label="Left Leg Lean" value={item.left_leg_lean} />
+                  <DetailRow label="Notes" value={item.notes} />
+                  <DetailRow
+                    label="Scan file"
+                    value={item.scan_image_url || item.inbody_pdf || "No file"}
+                  />
+                </>
+              )}
+            />
           </div>
         )}
 
@@ -1244,49 +1394,57 @@ export default function Home() {
               </button>
             </form>
 
-            <div className="card">
-              <div className="kicker">History</div>
-              <h2>Recent bloodwork uploads</h2>
-
-              {!bloodworkRows.length ? (
-                <div className="empty">No bloodwork uploads yet.</div>
-              ) : (
-                <div className="stack">
-                  {bloodworkRows.map((item) => (
-                    <div className="listRow" key={item.id}>
-                      <strong>{item.lab_name || "Bloodwork panel"}</strong>
-                      <span>{item.notes || "No notes"}</span>
-                      <small>{item.panel_date}</small>
-                    </div>
-                  ))}
+            <ExpandableHistoryCard
+              title="Recent bloodwork uploads"
+              kicker="History"
+              items={bloodworkRows}
+              expandedId={expandedBloodworkId}
+              setExpandedId={setExpandedBloodworkId}
+              renderSummary={(item, isOpen) => (
+                <div className="listRow" style={{ borderBottom: "none", padding: 0 }}>
+                  <strong>{item.lab_name || "Bloodwork panel"}</strong>
+                  <span>{item.notes || "No notes"}</span>
+                  <small>{isOpen ? "Hide" : item.panel_date}</small>
                 </div>
               )}
-            </div>
+              renderExpanded={(item) => (
+                <>
+                  <DetailRow label="Panel date" value={item.panel_date} />
+                  <DetailRow label="Lab name" value={item.lab_name} />
+                  <DetailRow label="Notes" value={item.notes} />
+                  <DetailRow
+                    label="Report file"
+                    value={item.report_pdf || "No file"}
+                  />
+                </>
+              )}
+            />
           </div>
         )}
 
         {tab === "timeline" && (
-          <div className="card">
-            <div className="kicker">All events</div>
-            <h2>Timeline</h2>
-
-            {!timeline.length ? (
-              <div className="empty">No timeline entries yet.</div>
-            ) : (
-              <div className="stack">
-                {timeline.map((item, idx) => (
-                  <div
-                    className="listRow"
-                    key={`${item.type}-${item.date}-${idx}`}
-                  >
-                    <strong>{item.type}</strong>
-                    <span>{item.title}</span>
-                    <small>{item.date}</small>
-                  </div>
-                ))}
+          <ExpandableHistoryCard
+            title="Timeline"
+            kicker="All events"
+            items={timeline}
+            expandedId={expandedTimelineId}
+            setExpandedId={setExpandedTimelineId}
+            renderSummary={(item, isOpen) => (
+              <div className="listRow" style={{ borderBottom: "none", padding: 0 }}>
+                <strong>{item.type}</strong>
+                <span>{item.title}</span>
+                <small>{isOpen ? "Hide" : item.date}</small>
               </div>
             )}
-          </div>
+            renderExpanded={(item) => (
+              <>
+                <DetailRow label="Date" value={item.date} />
+                <DetailRow label="Type" value={item.type} />
+                <DetailRow label="Title" value={item.title} />
+                <DetailRow label="Description" value={item.description} />
+              </>
+            )}
+          />
         )}
       </section>
     </main>
