@@ -31,6 +31,12 @@ function safeNumber(value) {
   return Number.isNaN(num) ? null : num;
 }
 
+function getStorageUrl(bucket, path) {
+  if (!path) return null;
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  return data?.publicUrl || null;
+}
+
 function DetailRow({ label, value }) {
   return (
     <div
@@ -996,6 +1002,15 @@ export default function Home() {
               )}
               renderExpanded={(item) => {
                 const photoSet = photosByDate[item.weigh_in_date] || null;
+                const frontUrl = photoSet?.front_photo
+                  ? getStorageUrl("progress-photos", photoSet.front_photo)
+                  : null;
+                const sideUrl = photoSet?.side_photo
+                  ? getStorageUrl("progress-photos", photoSet.side_photo)
+                  : null;
+                const backUrl = photoSet?.back_photo
+                  ? getStorageUrl("progress-photos", photoSet.back_photo)
+                  : null;
 
                 return (
                   <>
@@ -1005,18 +1020,67 @@ export default function Home() {
                       value={item.weight_lb ? `${item.weight_lb} lb` : null}
                     />
                     <DetailRow label="Notes" value={item.notes} />
-                    <DetailRow
-                      label="Front photo"
-                      value={photoSet?.front_photo || "No file"}
-                    />
-                    <DetailRow
-                      label="Side photo"
-                      value={photoSet?.side_photo || "No file"}
-                    />
-                    <DetailRow
-                      label="Back photo"
-                      value={photoSet?.back_photo || "No file"}
-                    />
+
+                    <div
+                      style={{
+                        padding: "8px 0",
+                        borderBottom: "1px solid rgba(255,255,255,.06)"
+                      }}
+                    >
+                      <div className="muted" style={{ marginBottom: 8 }}>
+                        Front photo
+                      </div>
+                      {frontUrl ? (
+                        <a href={frontUrl} target="_blank" rel="noreferrer">
+                          <img
+                            src={frontUrl}
+                            alt="Front progress"
+                            style={{ width: 180, borderRadius: 12, display: "block" }}
+                          />
+                        </a>
+                      ) : (
+                        <div>No file</div>
+                      )}
+                    </div>
+
+                    <div
+                      style={{
+                        padding: "8px 0",
+                        borderBottom: "1px solid rgba(255,255,255,.06)"
+                      }}
+                    >
+                      <div className="muted" style={{ marginBottom: 8 }}>
+                        Side photo
+                      </div>
+                      {sideUrl ? (
+                        <a href={sideUrl} target="_blank" rel="noreferrer">
+                          <img
+                            src={sideUrl}
+                            alt="Side progress"
+                            style={{ width: 180, borderRadius: 12, display: "block" }}
+                          />
+                        </a>
+                      ) : (
+                        <div>No file</div>
+                      )}
+                    </div>
+
+                    <div style={{ padding: "8px 0" }}>
+                      <div className="muted" style={{ marginBottom: 8 }}>
+                        Back photo
+                      </div>
+                      {backUrl ? (
+                        <a href={backUrl} target="_blank" rel="noreferrer">
+                          <img
+                            src={backUrl}
+                            alt="Back progress"
+                            style={{ width: 180, borderRadius: 12, display: "block" }}
+                          />
+                        </a>
+                      ) : (
+                        <div>No file</div>
+                      )}
+                    </div>
                   </>
                 );
               }}
@@ -1087,366 +1151,3 @@ export default function Home() {
             </form>
 
             <ExpandableHistoryCard
-              title="Recent peptide logs"
-              kicker="History"
-              items={peptides}
-              expandedId={expandedPeptideId}
-              setExpandedId={setExpandedPeptideId}
-              renderSummary={(item, isOpen) => (
-                <div className="listRow" style={{ borderBottom: "none", padding: 0 }}>
-                  <strong>{item.peptide_name || "Peptide"}</strong>
-                  <span>{item.dose || "No dose"}</span>
-                  <small>{isOpen ? "Hide" : item.log_date}</small>
-                </div>
-              )}
-              renderExpanded={(item) => (
-                <>
-                  <DetailRow label="Date" value={item.log_date} />
-                  <DetailRow label="Compound" value={item.peptide_name} />
-                  <DetailRow label="Dose" value={item.dose} />
-                  <DetailRow label="Full notes" value={item.notes} />
-                </>
-              )}
-            />
-          </div>
-        )}
-
-        {tab === "inbody" && (
-          <div className="grid grid2">
-            <form className="card" onSubmit={saveInbody}>
-              <div className="kicker">Body composition</div>
-              <h2>Add InBody scan</h2>
-
-              <label>Scan date</label>
-              <input
-                type="date"
-                value={inbody.scan_date}
-                onChange={(e) =>
-                  setInbody({ ...inbody, scan_date: e.target.value })
-                }
-                required
-              />
-
-              <label>Weight</label>
-              <input
-                type="number"
-                step="0.1"
-                value={inbody.weight}
-                onChange={(e) =>
-                  setInbody({ ...inbody, weight: e.target.value })
-                }
-              />
-
-              <label>Skeletal Muscle Mass</label>
-              <input
-                type="number"
-                step="0.1"
-                value={inbody.skeletal_muscle_mass || ""}
-                onChange={(e) =>
-                  setInbody({ ...inbody, skeletal_muscle_mass: e.target.value })
-                }
-              />
-
-              <label>Body Fat Mass</label>
-              <input
-                type="number"
-                step="0.1"
-                value={inbody.body_fat_mass || ""}
-                onChange={(e) =>
-                  setInbody({ ...inbody, body_fat_mass: e.target.value })
-                }
-              />
-
-              <label>Percent Body Fat</label>
-              <input
-                type="number"
-                step="0.1"
-                value={inbody.percent_body_fat || ""}
-                onChange={(e) =>
-                  setInbody({ ...inbody, percent_body_fat: e.target.value })
-                }
-              />
-
-              <label>Lean Body Mass</label>
-              <input
-                type="number"
-                step="0.1"
-                value={inbody.lean_body_mass || ""}
-                onChange={(e) =>
-                  setInbody({ ...inbody, lean_body_mass: e.target.value })
-                }
-              />
-
-              <label>BMI</label>
-              <input
-                type="number"
-                step="0.1"
-                value={inbody.bmi || ""}
-                onChange={(e) =>
-                  setInbody({ ...inbody, bmi: e.target.value })
-                }
-              />
-
-              <label>BMR</label>
-              <input
-                type="number"
-                step="1"
-                value={inbody.bmr || ""}
-                onChange={(e) =>
-                  setInbody({ ...inbody, bmr: e.target.value })
-                }
-              />
-
-              <label>ECW/TBW</label>
-              <input
-                type="number"
-                step="0.001"
-                value={inbody.ecw_tbw || ""}
-                onChange={(e) =>
-                  setInbody({ ...inbody, ecw_tbw: e.target.value })
-                }
-              />
-
-              <label>Visceral Fat Level</label>
-              <input
-                type="number"
-                step="1"
-                value={inbody.visceral_fat || ""}
-                onChange={(e) =>
-                  setInbody({ ...inbody, visceral_fat: e.target.value })
-                }
-              />
-
-              <label>Right Arm Lean Mass</label>
-              <input
-                type="number"
-                step="0.1"
-                value={inbody.right_arm_lean || ""}
-                onChange={(e) =>
-                  setInbody({ ...inbody, right_arm_lean: e.target.value })
-                }
-              />
-
-              <label>Left Arm Lean Mass</label>
-              <input
-                type="number"
-                step="0.1"
-                value={inbody.left_arm_lean || ""}
-                onChange={(e) =>
-                  setInbody({ ...inbody, left_arm_lean: e.target.value })
-                }
-              />
-
-              <label>Trunk Lean Mass</label>
-              <input
-                type="number"
-                step="0.1"
-                value={inbody.trunk_lean || ""}
-                onChange={(e) =>
-                  setInbody({ ...inbody, trunk_lean: e.target.value })
-                }
-              />
-
-              <label>Right Leg Lean Mass</label>
-              <input
-                type="number"
-                step="0.1"
-                value={inbody.right_leg_lean || ""}
-                onChange={(e) =>
-                  setInbody({ ...inbody, right_leg_lean: e.target.value })
-                }
-              />
-
-              <label>Left Leg Lean Mass</label>
-              <input
-                type="number"
-                step="0.1"
-                value={inbody.left_leg_lean || ""}
-                onChange={(e) =>
-                  setInbody({ ...inbody, left_leg_lean: e.target.value })
-                }
-              />
-
-              <label>Notes</label>
-              <textarea
-                value={inbody.notes || ""}
-                onChange={(e) =>
-                  setInbody({ ...inbody, notes: e.target.value })
-                }
-              />
-
-              <label>Upload scan image / PDF</label>
-              <input
-                type="file"
-                onChange={(e) => setInbodyFile(e.target.files[0])}
-              />
-
-              <button className="btn" type="submit">
-                Save InBody Scan
-              </button>
-            </form>
-
-            <ExpandableHistoryCard
-              title="Recent InBody scans"
-              kicker="History"
-              items={inbodyRows}
-              expandedId={expandedInbodyId}
-              setExpandedId={setExpandedInbodyId}
-              renderSummary={(item, isOpen) => (
-                <div className="listRow" style={{ borderBottom: "none", padding: 0 }}>
-                  <strong>{item.weight ? `${item.weight} lb` : "No weight"}</strong>
-                  <span>
-                    SMM {item.skeletal_muscle_mass ?? item.muscle_mass ?? "—"} ·
-                    PBF {item.percent_body_fat ?? item.body_fat ?? "—"} ·
-                    BFM {item.body_fat_mass ?? "—"} ·
-                    Visceral {item.visceral_fat ?? "—"}
-                  </span>
-                  <small>{isOpen ? "Hide" : item.scan_date}</small>
-                </div>
-              )}
-              renderExpanded={(item) => (
-                <>
-                  <DetailRow label="Scan date" value={item.scan_date} />
-                  <DetailRow
-                    label="Weight"
-                    value={item.weight ? `${item.weight} lb` : null}
-                  />
-                  <DetailRow
-                    label="Skeletal Muscle Mass"
-                    value={item.skeletal_muscle_mass ?? item.muscle_mass}
-                  />
-                  <DetailRow
-                    label="Body Fat Mass"
-                    value={item.body_fat_mass}
-                  />
-                  <DetailRow
-                    label="Percent Body Fat"
-                    value={item.percent_body_fat ?? item.body_fat}
-                  />
-                  <DetailRow
-                    label="Lean Body Mass"
-                    value={item.lean_body_mass}
-                  />
-                  <DetailRow label="BMI" value={item.bmi} />
-                  <DetailRow label="BMR" value={item.bmr} />
-                  <DetailRow label="ECW/TBW" value={item.ecw_tbw} />
-                  <DetailRow
-                    label="Visceral Fat Level"
-                    value={item.visceral_fat}
-                  />
-                  <DetailRow label="Right Arm Lean" value={item.right_arm_lean} />
-                  <DetailRow label="Left Arm Lean" value={item.left_arm_lean} />
-                  <DetailRow label="Trunk Lean" value={item.trunk_lean} />
-                  <DetailRow label="Right Leg Lean" value={item.right_leg_lean} />
-                  <DetailRow label="Left Leg Lean" value={item.left_leg_lean} />
-                  <DetailRow label="Notes" value={item.notes} />
-                  <DetailRow
-                    label="Scan file"
-                    value={item.scan_image_url || item.inbody_pdf || "No file"}
-                  />
-                </>
-              )}
-            />
-          </div>
-        )}
-
-        {tab === "bloodwork" && (
-          <div className="grid grid2">
-            <form className="card" onSubmit={saveBloodwork}>
-              <div className="kicker">Lab upload</div>
-              <h2>Upload bloodwork</h2>
-
-              <label>Panel date</label>
-              <input
-                type="date"
-                value={bloodwork.panel_date}
-                onChange={(e) =>
-                  setBloodwork({ ...bloodwork, panel_date: e.target.value })
-                }
-                required
-              />
-
-              <label>Lab name</label>
-              <input
-                placeholder="Function Health, Quest, Labcorp"
-                value={bloodwork.lab_name}
-                onChange={(e) =>
-                  setBloodwork({ ...bloodwork, lab_name: e.target.value })
-                }
-              />
-
-              <label>Notes</label>
-              <textarea
-                value={bloodwork.notes}
-                onChange={(e) =>
-                  setBloodwork({ ...bloodwork, notes: e.target.value })
-                }
-              />
-
-              <label>Upload report image / PDF</label>
-              <input
-                type="file"
-                onChange={(e) => setBloodworkFile(e.target.files[0])}
-              />
-
-              <button className="btn" type="submit">
-                Upload Bloodwork
-              </button>
-            </form>
-
-            <ExpandableHistoryCard
-              title="Recent bloodwork uploads"
-              kicker="History"
-              items={bloodworkRows}
-              expandedId={expandedBloodworkId}
-              setExpandedId={setExpandedBloodworkId}
-              renderSummary={(item, isOpen) => (
-                <div className="listRow" style={{ borderBottom: "none", padding: 0 }}>
-                  <strong>{item.lab_name || "Bloodwork panel"}</strong>
-                  <span>{item.notes || "No notes"}</span>
-                  <small>{isOpen ? "Hide" : item.panel_date}</small>
-                </div>
-              )}
-              renderExpanded={(item) => (
-                <>
-                  <DetailRow label="Panel date" value={item.panel_date} />
-                  <DetailRow label="Lab name" value={item.lab_name} />
-                  <DetailRow label="Notes" value={item.notes} />
-                  <DetailRow
-                    label="Report file"
-                    value={item.report_pdf || "No file"}
-                  />
-                </>
-              )}
-            />
-          </div>
-        )}
-
-        {tab === "timeline" && (
-          <ExpandableHistoryCard
-            title="Timeline"
-            kicker="All events"
-            items={timeline}
-            expandedId={expandedTimelineId}
-            setExpandedId={setExpandedTimelineId}
-            renderSummary={(item, isOpen) => (
-              <div className="listRow" style={{ borderBottom: "none", padding: 0 }}>
-                <strong>{item.type}</strong>
-                <span>{item.title}</span>
-                <small>{isOpen ? "Hide" : item.date}</small>
-              </div>
-            )}
-            renderExpanded={(item) => (
-              <>
-                <DetailRow label="Date" value={item.date} />
-                <DetailRow label="Type" value={item.type} />
-                <DetailRow label="Title" value={item.title} />
-                <DetailRow label="Description" value={item.description} />
-              </>
-            )}
-          />
-        )}
-      </section>
-    </main>
-  );
-}
