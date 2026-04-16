@@ -46,6 +46,15 @@ export default function Home() {
     await supabase.auth.signOut();
   }
 
+  function fileToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Could not read file"));
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function parseBloodwork() {
     try {
       setMessage("");
@@ -61,28 +70,9 @@ export default function Home() {
         return;
       }
 
-      setMessage("Uploading bloodwork...");
+      setMessage("Reading image...");
 
-      const safeName = bloodworkFile.name.replace(/\s+/g, "-");
-      const path = `${session.user.id}/bloodwork/${Date.now()}-${safeName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("bloodwork-reports")
-        .upload(path, bloodworkFile, { upsert: true });
-
-      if (uploadError) {
-        setMessage(uploadError.message);
-        return;
-      }
-
-      const { data: signedData, error: signedError } = await supabase.storage
-        .from("bloodwork-reports")
-        .createSignedUrl(path, 600);
-
-      if (signedError || !signedData?.signedUrl) {
-        setMessage(signedError?.message || "Could not create signed URL.");
-        return;
-      }
+      const imageDataUrl = await fileToDataUrl(bloodworkFile);
 
       setMessage("Extracting markers with AI...");
 
@@ -96,7 +86,7 @@ export default function Home() {
             Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
           },
           body: JSON.stringify({
-            imageUrl: signedData.signedUrl
+            imageDataUrl
           })
         }
       );
@@ -104,7 +94,7 @@ export default function Home() {
       const result = await res.json();
 
       if (!res.ok) {
-        setMessage(result?.error || "AI parser failed.");
+        setMessage(result?.error || "AI parser failed");
         return;
       }
 
@@ -204,10 +194,9 @@ export default function Home() {
                 borderRadius: 8
               }}
             >
-              <strong>{marker.marker_name || marker.marker || "Unknown marker"}</strong>
+              <strong>{marker.marker_name || "Unknown marker"}</strong>
               <div>
-                {marker.value_numeric ?? marker.value ?? marker.value_text ?? "—"}{" "}
-                {marker.unit || ""}
+                {marker.value_numeric ?? marker.value_text ?? "—"} {marker.unit || ""}
               </div>
               <div>{marker.reference_range || ""}</div>
               <div>{marker.flag || ""}</div>
