@@ -2,200 +2,219 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 export default function Home() {
-
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [bloodworkFile, setBloodworkFile] = useState(null);
   const [bloodMarkers, setBloodMarkers] = useState([]);
 
-  const [email,setEmail] = useState("");
-  const [password,setPassword] = useState("");
-
   useEffect(() => {
-
-    supabase.auth.getSession().then(({ data })=>{
+    supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setLoading(false);
     });
 
-    const { data } = supabase.auth.onAuthStateChange((_event,session)=>{
-      setSession(session);
+    const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
       setLoading(false);
     });
 
     return () => data.subscription.unsubscribe();
+  }, []);
 
-  },[]);
-
-  async function signIn(){
-
+  async function signIn() {
+    setMessage("");
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
-
-    if(error){
-      setMessage(error.message);
-    }
-
+    setMessage(error ? error.message : "Signed in");
   }
 
-  async function signUp(){
-
+  async function signUp() {
+    setMessage("");
     const { error } = await supabase.auth.signUp({
       email,
       password
     });
-
-    if(error){
-      setMessage(error.message);
-    }
-
+    setMessage(error ? error.message : "Account created");
   }
 
-  async function signOut(){
+  async function signOut() {
     await supabase.auth.signOut();
   }
 
-  async function parseBloodwork(){
+  async function parseBloodwork() {
+    try {
+      setMessage("");
+      setBloodMarkers([]);
 
-    if(!bloodworkFile){
-      setMessage("Upload bloodwork first");
-      return;
-    }
-
-    setMessage("Uploading bloodwork...");
-
-    const path = `${session.user.id}/bloodwork/${Date.now()}-${bloodworkFile.name}`;
-
-    const { error:uploadError } = await supabase.storage
-      .from("bloodwork-reports")
-      .upload(path,bloodworkFile,{ upsert:true });
-
-    if(uploadError){
-      setMessage(uploadError.message);
-      return;
-    }
-
-    const { data:signedData,error:signedError } = await supabase.storage
-      .from("bloodwork-reports")
-      .createSignedUrl(path,600);
-
-    if(signedError){
-      setMessage(signedError.message);
-      return;
-    }
-
-    setMessage("Extracting markers with AI...");
-
-    const res = await fetch(
-      "https://kljdmgemuebziqdawmsh.supabase.co/functions/v1/parse-bloodwork",
-      {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "apikey":process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          "Authorization":`Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
-        },
-        body:JSON.stringify({
-          imageUrl:signedData.signedUrl
-        })
+      if (!session?.user) {
+        setMessage("You must be signed in.");
+        return;
       }
-    );
 
-    const result = await res.json();
+      if (!bloodworkFile) {
+        setMessage("Please choose a bloodwork image first.");
+        return;
+      }
 
-    if(!res.ok){
-      setMessage(result.error || "AI parser failed");
-      return;
+      setMessage("Uploading bloodwork...");
+
+      const safeName = bloodworkFile.name.replace(/\s+/g, "-");
+      const path = `${session.user.id}/bloodwork/${Date.now()}-${safeName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("bloodwork-reports")
+        .upload(path, bloodworkFile, { upsert: true });
+
+      if (uploadError) {
+        setMessage(uploadError.message);
+        return;
+      }
+
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from("bloodwork-reports")
+        .createSignedUrl(path, 600);
+
+      if (signedError || !signedData?.signedUrl) {
+        setMessage(signedError?.message || "Could not create signed URL.");
+        return;
+      }
+
+      setMessage("Extracting markers with AI...");
+
+      const res = await fetch(
+        "https://kljdmgemuebziqdawmsh.supabase.co/functions/v1/parse-bloodwork",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            imageUrl: signedData.signedUrl
+          })
+        }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        setMessage(result?.error || "AI parser failed.");
+        return;
+      }
+
+      const markers = Array.isArray(result?.markers) ? result.markers : [];
+      setBloodMarkers(markers);
+
+      if (markers.length) {
+        setMessage(`Parsed ${markers.length} markers.`);
+      } else {
+        setMessage("No markers detected from that image.");
+      }
+    } catch (err) {
+      setMessage(err.message || "Something went wrong.");
     }
-
-    setBloodMarkers(result.markers || []);
-
-    if(result.markers?.length){
-      setMessage(`Parsed ${result.markers.length} markers`);
-    }else{
-      setMessage("No markers detected");
-    }
-
   }
 
-  if(loading){
-    return <div style={{padding:40}}>Loading SemperFit...</div>;
+  if (loading) {
+    return <div style={{ padding: 40 }}>Loading SemperFit...</div>;
   }
 
-  if(!session){
-
-    return(
-      <div style={{padding:40}}>
-
+  if (!session) {
+    return (
+      <div style={{ padding: 40, maxWidth: 500 }}>
         <h1>SemperFit</h1>
 
-        <input
-          placeholder="email"
-          value={email}
-          onChange={(e)=>setEmail(e.target.value)}
-        />
+        <div style={{ display: "grid", gap: 12 }}>
+          <input
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ padding: 10 }}
+          />
 
-        <input
-          type="password"
-          placeholder="password"
-          value={password}
-          onChange={(e)=>setPassword(e.target.value)}
-        />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ padding: 10 }}
+          />
 
-        <br/><br/>
+          <div style={{ display: "flex", gap: 12 }}>
+            <button type="button" onClick={signIn}>
+              Sign In
+            </button>
+            <button type="button" onClick={signUp}>
+              Create Account
+            </button>
+          </div>
 
-        <button onClick={signIn}>Sign In</button>
-        <button onClick={signUp}>Create Account</button>
-
-        <p>{message}</p>
-
+          <p>{message}</p>
+        </div>
       </div>
     );
-
   }
 
-  return(
-
-    <div style={{padding:40}}>
-
+  return (
+    <div style={{ padding: 40, maxWidth: 800 }}>
       <h1>SemperFit</h1>
 
-      <button onClick={signOut}>Sign Out</button>
+      <div style={{ marginBottom: 20 }}>
+        <button type="button" onClick={signOut}>
+          Sign Out
+        </button>
+      </div>
 
-      <hr/>
+      <h2>Bloodwork AI Parser Test</h2>
 
-      <h2>Bloodwork AI Parser</h2>
+      <div style={{ display: "grid", gap: 12 }}>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setBloodworkFile(e.target.files?.[0] || null)}
+        />
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e)=>setBloodworkFile(e.target.files[0])}
-      />
+        <button type="button" onClick={parseBloodwork}>
+          Upload + Extract with AI
+        </button>
 
-      <br/><br/>
+        <p>{message}</p>
+      </div>
 
-      <button onClick={parseBloodwork}>
-        Upload + Extract with AI
-      </button>
-
-      <p>{message}</p>
-
-      <hr/>
+      <hr style={{ margin: "24px 0" }} />
 
       <h3>Extracted Markers</h3>
 
-      {bloodMarkers.map((m,i)=>(
-        <div key={i}>
-          {m.marker} : {m.value} {m.unit}
+      {!bloodMarkers.length ? (
+        <p>No markers yet.</p>
+      ) : (
+        <div style={{ display: "grid", gap: 8 }}>
+          {bloodMarkers.map((marker, i) => (
+            <div
+              key={i}
+              style={{
+                border: "1px solid #ccc",
+                padding: 10,
+                borderRadius: 8
+              }}
+            >
+              <strong>{marker.marker_name || marker.marker || "Unknown marker"}</strong>
+              <div>
+                {marker.value_numeric ?? marker.value ?? marker.value_text ?? "—"}{" "}
+                {marker.unit || ""}
+              </div>
+              <div>{marker.reference_range || ""}</div>
+              <div>{marker.flag || ""}</div>
+            </div>
+          ))}
         </div>
-      ))}
-
+      )}
     </div>
-
   );
-
 }
