@@ -276,53 +276,75 @@ export default function Home() {
   }
 
   async function extractLabDraft() {
-    try {
-      setMessage("");
-      setDraftMarkers([]);
-      setCoaching([]);
+  try {
+    setMessage("");
+    setDraftMarkers([]);
+    setCoaching([]);
 
-      if (!session?.user) {
-        setMessage("You must be signed in.");
-        return;
+    if (!session?.user) {
+      setMessage("You must be signed in.");
+      return;
+    }
+
+    if (!labFile) {
+      setMessage("Please choose a lab file first.");
+      return;
+    }
+
+    setIsExtracting(true);
+
+    setMessage(
+      labFile.type === "application/pdf" ? "Uploading PDF..." : "Reading image..."
+    );
+
+    const fileDataUrl = await fileToDataUrl(labFile);
+
+    setMessage("Extracting draft markers with AI...");
+
+    const res = await fetch(
+      "https://kljdmgemuebziqdawmsh.supabase.co/functions/v1/parse-bloodwork",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          fileDataUrl,
+          fileName: labFile.name,
+          mimeType: labFile.type,
+          labName
+        })
       }
+    );
 
-      if (!labFile) {
-        setMessage("Please choose a lab file first.");
-        return;
-      }
+    const result = await res.json();
 
-      setIsExtracting(true);
+    if (!res.ok) {
+      setMessage(result?.error || "AI parser failed");
+      return;
+    }
 
-      const fileDataUrl = await fileToDataUrl(labFile);
+    const parsedMarkers = Array.isArray(result?.markers) ? result.markers : [];
+    const normalized = normalizeDraftMarkers(parsedMarkers);
 
-      let pdfText = null;
-      if (labFile.type === "application/pdf") {
-        setMessage("Reading PDF...");
-        pdfText = await extractTextFromPDF(labFile);
-      } else {
-        setMessage("Reading image...");
-      }
+    setDraftMarkers(normalized);
 
-      setMessage("Extracting draft markers with AI...");
-
-      const res = await fetch(
-        "https://kljdmgemuebziqdawmsh.supabase.co/functions/v1/parse-bloodwork",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify({
-            fileDataUrl,
-            fileName: labFile.name,
-            mimeType: labFile.type,
-            labName,
-            pdfText
-          })
-        }
+    if (normalized.length) {
+      setCoaching(buildCoaching(normalized));
+      setMessage(
+        `Draft ready. Review ${normalized.length} extracted markers, fix anything wrong, then click Confirm + Save Results.`
       );
+    } else {
+      setMessage("No markers detected from that file.");
+    }
+  } catch (err) {
+    setMessage(err.message || "Something went wrong.");
+  } finally {
+    setIsExtracting(false);
+  }
+};
 
       const result = await res.json();
 
