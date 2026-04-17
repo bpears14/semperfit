@@ -62,16 +62,22 @@ function buildCoaching(markers) {
   const apoBVal = getMarkerValue(apoB);
   if (apoBVal !== null) {
     if (apoBVal >= 90) {
-      notes.push(`ApoB is ${apoBVal}, which is above an ideal cardiovascular target for many people. This is worth reviewing with your clinician.`);
+      notes.push(
+        `ApoB is ${apoBVal}, which is above an ideal cardiovascular target for many people. This is worth reviewing with your clinician.`
+      );
     } else {
-      notes.push(`ApoB is ${apoBVal}, which is a strong cardiovascular marker to keep tracking over time.`);
+      notes.push(
+        `ApoB is ${apoBVal}, which is a strong cardiovascular marker to keep tracking over time.`
+      );
     }
   }
 
   const ldlVal = getMarkerValue(ldl);
   if (ldlVal !== null) {
     if (ldlVal >= 100) {
-      notes.push(`LDL is ${ldlVal}. If this stays elevated, it is worth pairing with ApoB, triglycerides, and family history when reviewing risk.`);
+      notes.push(
+        `LDL is ${ldlVal}. If this stays elevated, it is worth pairing with ApoB, triglycerides, and family history when reviewing risk.`
+      );
     } else {
       notes.push(`LDL is ${ldlVal}, which is a favorable result to maintain.`);
     }
@@ -79,74 +85,106 @@ function buildCoaching(markers) {
 
   const hdlVal = getMarkerValue(hdl);
   if (hdlVal !== null && hdlVal < 40) {
-    notes.push(`HDL is ${hdlVal}, which may improve with consistent training, better sleep, and body composition improvements.`);
+    notes.push(
+      `HDL is ${hdlVal}, which may improve with consistent training, better sleep, and body composition improvements.`
+    );
   }
 
   const trigVal = getMarkerValue(triglycerides);
   if (trigVal !== null) {
     if (trigVal >= 150) {
-      notes.push(`Triglycerides are ${trigVal}. Reducing alcohol, tightening calorie balance, and improving insulin sensitivity can help.`);
+      notes.push(
+        `Triglycerides are ${trigVal}. Reducing alcohol, tightening calorie balance, and improving insulin sensitivity can help.`
+      );
     } else {
-      notes.push(`Triglycerides are ${trigVal}, which is a positive metabolic sign.`);
+      notes.push(
+        `Triglycerides are ${trigVal}, which is a positive metabolic sign.`
+      );
     }
   }
 
   const glucoseVal = getMarkerValue(glucose);
   if (glucoseVal !== null && glucoseVal >= 100) {
-    notes.push(`Glucose is ${glucoseVal}. That may point toward blood sugar control issues, especially when paired with insulin and A1C.`);
+    notes.push(
+      `Glucose is ${glucoseVal}. That may point toward blood sugar control issues, especially when paired with insulin and A1C.`
+    );
   }
 
   const a1cVal = getMarkerValue(a1c);
   if (a1cVal !== null) {
     if (a1cVal >= 5.7) {
-      notes.push(`A1C is ${a1cVal}. This is worth paying attention to for blood sugar control and insulin resistance risk.`);
+      notes.push(
+        `A1C is ${a1cVal}. This is worth paying attention to for blood sugar control and insulin resistance risk.`
+      );
     } else {
-      notes.push(`A1C is ${a1cVal}, which is a solid long-term blood sugar marker.`);
+      notes.push(
+        `A1C is ${a1cVal}, which is a solid long-term blood sugar marker.`
+      );
     }
   }
 
   const insulinVal = getMarkerValue(insulin);
   if (insulinVal !== null && insulinVal > 10) {
-    notes.push(`Fasting insulin is ${insulinVal}. Even when glucose looks okay, higher insulin can suggest insulin resistance is developing.`);
+    notes.push(
+      `Fasting insulin is ${insulinVal}. Even when glucose looks okay, higher insulin can suggest insulin resistance is developing.`
+    );
   }
 
   const crpVal = getMarkerValue(crp);
   if (crpVal !== null) {
     if (crpVal > 1) {
-      notes.push(`hs-CRP is ${crpVal}, suggesting inflammation is worth monitoring. Sleep, recovery, illness, and body-fat levels can affect this.`);
+      notes.push(
+        `hs-CRP is ${crpVal}, suggesting inflammation is worth monitoring. Sleep, recovery, illness, and body-fat levels can affect this.`
+      );
     } else {
-      notes.push(`hs-CRP is ${crpVal}, which is encouraging from an inflammation standpoint.`);
+      notes.push(
+        `hs-CRP is ${crpVal}, which is encouraging from an inflammation standpoint.`
+      );
     }
   }
 
   const vitaminDVal = getMarkerValue(vitaminD);
   if (vitaminDVal !== null) {
     if (vitaminDVal < 30) {
-      notes.push(`Vitamin D is ${vitaminDVal}. That is commonly discussed for improvement with sunlight exposure or supplementation under clinician guidance.`);
+      notes.push(
+        `Vitamin D is ${vitaminDVal}. That is commonly discussed for improvement with sunlight exposure or supplementation under clinician guidance.`
+      );
     } else {
-      notes.push(`Vitamin D is ${vitaminDVal}, which is a solid level to maintain.`);
+      notes.push(
+        `Vitamin D is ${vitaminDVal}, which is a solid level to maintain.`
+      );
     }
   }
 
   const testosteroneVal = getMarkerValue(testosterone);
   if (testosteroneVal !== null) {
     if (testosteroneVal < 500) {
-      notes.push(`Total testosterone is ${testosteroneVal}. If symptoms exist, this is worth reviewing alongside free testosterone, SHBG, sleep, calories, and recovery.`);
+      notes.push(
+        `Total testosterone is ${testosteroneVal}. If symptoms exist, this is worth reviewing alongside free testosterone, SHBG, sleep, calories, and recovery.`
+      );
     } else {
-      notes.push(`Total testosterone is ${testosteroneVal}, which is a strong number to track over time.`);
+      notes.push(
+        `Total testosterone is ${testosteroneVal}, which is a strong number to track over time.`
+      );
     }
   }
 
   const tshVal = getMarkerValue(tsh);
   if (tshVal !== null && tshVal > 4) {
-    notes.push(`TSH is ${tshVal}. That may be worth discussing with your clinician alongside free T4, free T3, symptoms, and thyroid antibodies.`);
+    notes.push(
+      `TSH is ${tshVal}. That may be worth discussing with your clinician alongside free T4, free T3, symptoms, and thyroid antibodies.`
+    );
   }
 
   if (!notes.length) {
-    notes.push("Your lab draft is ready for review. Confirm or edit any values that look off before saving.");
+    notes.push(
+      "Your lab draft is ready for review. Confirm or edit any values that look off before saving."
+    );
   }
 
-  notes.push("This coaching is educational and trend-focused, not a diagnosis. Use it to guide questions for your clinician.");
+  notes.push(
+    "This coaching is educational and trend-focused, not a diagnosis. Use it to guide questions for your clinician."
+  );
 
   return notes;
 }
@@ -243,8 +281,6 @@ export default function Home() {
     });
   }
 
- 
-
   function normalizeDraftMarkers(markers) {
     return markers.map((marker, index) => {
       const numeric =
@@ -276,75 +312,47 @@ export default function Home() {
   }
 
   async function extractLabDraft() {
-  try {
-    setMessage("");
-    setDraftMarkers([]);
-    setCoaching([]);
+    try {
+      setMessage("");
+      setDraftMarkers([]);
+      setCoaching([]);
 
-    if (!session?.user) {
-      setMessage("You must be signed in.");
-      return;
-    }
-
-    if (!labFile) {
-      setMessage("Please choose a lab file first.");
-      return;
-    }
-
-    setIsExtracting(true);
-
-    setMessage(
-      labFile.type === "application/pdf" ? "Uploading PDF..." : "Reading image..."
-    );
-
-    const fileDataUrl = await fileToDataUrl(labFile);
-
-    setMessage("Extracting draft markers with AI...");
-
-    const res = await fetch(
-      "https://kljdmgemuebziqdawmsh.supabase.co/functions/v1/parse-bloodwork",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({
-          fileDataUrl,
-          fileName: labFile.name,
-          mimeType: labFile.type,
-          labName
-        })
+      if (!session?.user) {
+        setMessage("You must be signed in.");
+        return;
       }
-    );
 
-    const result = await res.json();
+      if (!labFile) {
+        setMessage("Please choose a lab file first.");
+        return;
+      }
 
-    if (!res.ok) {
-      setMessage(result?.error || "AI parser failed");
-      return;
-    }
-
-    const parsedMarkers = Array.isArray(result?.markers) ? result.markers : [];
-    const normalized = normalizeDraftMarkers(parsedMarkers);
-
-    setDraftMarkers(normalized);
-
-    if (normalized.length) {
-      setCoaching(buildCoaching(normalized));
+      setIsExtracting(true);
       setMessage(
-        `Draft ready. Review ${normalized.length} extracted markers, fix anything wrong, then click Confirm + Save Results.`
+        labFile.type === "application/pdf" ? "Uploading PDF..." : "Reading image..."
       );
-    } else {
-      setMessage("No markers detected from that file.");
-    }
-  } catch (err) {
-    setMessage(err.message || "Something went wrong.");
-  } finally {
-    setIsExtracting(false);
-  }
-};
+
+      const fileDataUrl = await fileToDataUrl(labFile);
+
+      setMessage("Extracting draft markers with AI...");
+
+      const res = await fetch(
+        "https://kljdmgemuebziqdawmsh.supabase.co/functions/v1/parse-bloodwork",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            fileDataUrl,
+            fileName: labFile.name,
+            mimeType: labFile.type,
+            labName
+          })
+        }
+      );
 
       const result = await res.json();
 
@@ -360,7 +368,9 @@ export default function Home() {
 
       if (normalized.length) {
         setCoaching(buildCoaching(normalized));
-        setMessage(`Draft ready. Review ${normalized.length} extracted markers, fix anything wrong, then click Confirm + Save Results.`);
+        setMessage(
+          `Draft ready. Review ${normalized.length} extracted markers, fix anything wrong, then click Confirm + Save Results.`
+        );
       } else {
         setMessage("No markers detected from that file.");
       }
@@ -372,27 +382,7 @@ export default function Home() {
   }
 
   function updateDraftMarker(localId, field, value) {
-  setDraftMarkers((current) =>
-    current.map((marker) => {
-      if (marker.local_id !== localId) return marker;
-
-      const updated = { ...marker, [field]: value };
-
-      if (field === "marker_name") {
-        updated.marker_slug = makeSlug(value);
-      }
-
-      if (field === "value" || field === "value_numeric") {
-        const numeric = safeNumber(value);
-        updated.value = numeric;
-        updated.value_numeric = numeric;
-        updated.value_text = value === "" || value === null ? "" : String(value);
-      }
-
-      return updated;
-    })
-  );
-}
+    setDraftMarkers((current) =>
       current.map((marker) => {
         if (marker.local_id !== localId) return marker;
 
@@ -406,7 +396,8 @@ export default function Home() {
           const numeric = safeNumber(value);
           updated.value = numeric;
           updated.value_numeric = numeric;
-          updated.value_text = value === "" || value === null ? "" : String(value);
+          updated.value_text =
+            value === "" || value === null || value === undefined ? "" : String(value);
         }
 
         return updated;
@@ -657,9 +648,18 @@ export default function Home() {
                   gap: 10
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 12
+                  }}
+                >
                   <strong>{marker.marker_name || "New Marker"}</strong>
-                  <button type="button" onClick={() => removeDraftMarker(marker.local_id)}>
+                  <button
+                    type="button"
+                    onClick={() => removeDraftMarker(marker.local_id)}
+                  >
                     Remove
                   </button>
                 </div>
@@ -677,7 +677,11 @@ export default function Home() {
                       type="text"
                       value={marker.marker_name}
                       onChange={(e) =>
-                        updateDraftMarker(marker.local_id, "marker_name", e.target.value)
+                        updateDraftMarker(
+                          marker.local_id,
+                          "marker_name",
+                          e.target.value
+                        )
                       }
                       style={{ width: "100%" }}
                     />
@@ -689,7 +693,11 @@ export default function Home() {
                       type="text"
                       value={marker.value_text}
                       onChange={(e) =>
-                        updateDraftMarker(marker.local_id, "value", e.target.value)
+                        updateDraftMarker(
+                          marker.local_id,
+                          "value",
+                          e.target.value
+                        )
                       }
                       style={{ width: "100%" }}
                     />
@@ -701,7 +709,11 @@ export default function Home() {
                       type="text"
                       value={marker.unit}
                       onChange={(e) =>
-                        updateDraftMarker(marker.local_id, "unit", e.target.value)
+                        updateDraftMarker(
+                          marker.local_id,
+                          "unit",
+                          e.target.value
+                        )
                       }
                       style={{ width: "100%" }}
                     />
@@ -713,7 +725,11 @@ export default function Home() {
                       type="text"
                       value={marker.reference_range}
                       onChange={(e) =>
-                        updateDraftMarker(marker.local_id, "reference_range", e.target.value)
+                        updateDraftMarker(
+                          marker.local_id,
+                          "reference_range",
+                          e.target.value
+                        )
                       }
                       style={{ width: "100%" }}
                     />
@@ -725,7 +741,11 @@ export default function Home() {
                       type="text"
                       value={marker.flag}
                       onChange={(e) =>
-                        updateDraftMarker(marker.local_id, "flag", e.target.value)
+                        updateDraftMarker(
+                          marker.local_id,
+                          "flag",
+                          e.target.value
+                        )
                       }
                       style={{ width: "100%" }}
                     />
@@ -737,7 +757,11 @@ export default function Home() {
                       type="text"
                       value={marker.category}
                       onChange={(e) =>
-                        updateDraftMarker(marker.local_id, "category", e.target.value)
+                        updateDraftMarker(
+                          marker.local_id,
+                          "category",
+                          e.target.value
+                        )
                       }
                       style={{ width: "100%" }}
                     />
@@ -799,7 +823,11 @@ export default function Home() {
                     >
                       <strong>{marker.marker_name}</strong>
                       <div>
-                        {marker.value_numeric ?? marker.value_text ?? marker.value ?? "—"} {marker.unit || ""}
+                        {marker.value_numeric ??
+                          marker.value_text ??
+                          marker.value ??
+                          "—"}{" "}
+                        {marker.unit || ""}
                       </div>
                       <div>{marker.reference_range || ""}</div>
                       <div>{marker.flag || ""}</div>
@@ -811,7 +839,12 @@ export default function Home() {
               {panel.notes ? (
                 <div style={{ marginTop: 16 }}>
                   <strong>Coaching</strong>
-                  <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit" }}>
+                  <pre
+                    style={{
+                      whiteSpace: "pre-wrap",
+                      fontFamily: "inherit"
+                    }}
+                  >
                     {panel.notes}
                   </pre>
                 </div>
