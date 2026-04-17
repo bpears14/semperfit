@@ -372,7 +372,27 @@ export default function Home() {
   }
 
   function updateDraftMarker(localId, field, value) {
-    setDraftMarkers((current) =>
+  setDraftMarkers((current) =>
+    current.map((marker) => {
+      if (marker.local_id !== localId) return marker;
+
+      const updated = { ...marker, [field]: value };
+
+      if (field === "marker_name") {
+        updated.marker_slug = makeSlug(value);
+      }
+
+      if (field === "value" || field === "value_numeric") {
+        const numeric = safeNumber(value);
+        updated.value = numeric;
+        updated.value_numeric = numeric;
+        updated.value_text = value === "" || value === null ? "" : String(value);
+      }
+
+      return updated;
+    })
+  );
+}
       current.map((marker) => {
         if (marker.local_id !== localId) return marker;
 
