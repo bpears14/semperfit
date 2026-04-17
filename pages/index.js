@@ -243,31 +243,7 @@ export default function Home() {
     });
   }
 
-  async function extractTextFromPDF(file) {
-  const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js";
-    const arrayBuffer = await file.arrayBuffer();
-
-    const pdf = await pdfjsLib.getDocument({
-      data: arrayBuffer,
-      disableWorker: true
-    }).promise;
-
-    let fullText = "";
-
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum += 1) {
-      const page = await pdf.getPage(pageNum);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items
-        .map((item) => ("str" in item ? item.str : ""))
-        .filter(Boolean)
-        .join(" ");
-      fullText += `\n--- Page ${pageNum} ---\n${pageText}\n`;
-    }
-
-    return fullText;
-  }
+ 
 
   function normalizeDraftMarkers(markers) {
     return markers.map((marker, index) => {
