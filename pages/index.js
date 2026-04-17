@@ -311,7 +311,12 @@ export default function Home() {
       }
 
       if (!bloodworkFile) {
-        setMessage("Please choose a bloodwork image first.");
+        setMessage("Please choose a bloodwork file first.");
+        return;
+      }
+
+      if (bloodworkFile.type === "application/pdf") {
+        setMessage("PDF import is not wired up yet. Please use a JPG or PNG screenshot for now.");
         return;
       }
 
@@ -582,10 +587,10 @@ export default function Home() {
           placeholder="Function Health"
         />
 
-        <label>Bloodwork Image</label>
+        <label>Bloodwork File</label>
         <input
           type="file"
-          accept="image/*"
+          accept="image/*,.pdf,application/pdf"
           onChange={(e) => setBloodworkFile(e.target.files?.[0] || null)}
         />
 
@@ -618,12 +623,7 @@ export default function Home() {
         <div style={{ marginTop: 32 }}>
           <h3>Review Extracted Results Before Saving</h3>
 
-          <div
-            style={{
-              display: "grid",
-              gap: 12
-            }}
-          >
+          <div style={{ display: "grid", gap: 12 }}>
             {draftMarkers.map((marker) => (
               <div
                 key={marker.local_id}
@@ -642,7 +642,13 @@ export default function Home() {
                   </button>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12 }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                    gap: 12
+                  }}
+                >
                   <div>
                     <div>Marker Name</div>
                     <input
