@@ -1,7 +1,3 @@
-import * as pdfjsLib from "pdfjs-dist/build/pdf";
-import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs";
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
 
@@ -247,6 +243,30 @@ export default function Home() {
     });
   }
 
+  async function extractTextFromPDF(file) {
+    const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
+    const arrayBuffer = await file.arrayBuffer();
+
+    const pdf = await pdfjsLib.getDocument({
+      data: arrayBuffer,
+      disableWorker: true
+    }).promise;
+
+    let fullText = "";
+
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum += 1) {
+      const page = await pdf.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item) => ("str" in item ? item.str : ""))
+        .filter(Boolean)
+        .join(" ");
+      fullText += `\n--- Page ${pageNum} ---\n${pageText}\n`;
+    }
+
+    return fullText;
+  }
+
   function normalizeDraftMarkers(markers) {
     return markers.map((marker, index) => {
       const numeric =
@@ -293,15 +313,17 @@ export default function Home() {
         return;
       }
 
-      if (labFile.type === "application/pdf") {
-        setMessage("PDF selection works now, but PDF parsing is the next upgrade. For this step, use a JPG or PNG screenshot/photo.");
-        return;
-      }
-
       setIsExtracting(true);
-      setMessage("Reading lab image...");
 
-      const imageDataUrl = await fileToDataUrl(labFile);
+      const fileDataUrl = await fileToDataUrl(labFile);
+
+      let pdfText = null;
+      if (labFile.type === "application/pdf") {
+        setMessage("Reading PDF...");
+        pdfText = await extractTextFromPDF(labFile);
+      } else {
+        setMessage("Reading image...");
+      }
 
       setMessage("Extracting draft markers with AI...");
 
@@ -315,9 +337,11 @@ export default function Home() {
             Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
           },
           body: JSON.stringify({
-            imageDataUrl,
+            fileDataUrl,
             fileName: labFile.name,
-            labName
+            mimeType: labFile.type,
+            labName,
+            pdfText
           })
         }
       );
