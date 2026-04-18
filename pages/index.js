@@ -1,6 +1,100 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
 
+const MARKER_LIBRARY = [
+  { label: "Apolipoprotein B (ApoB)", slug: "apolipoprotein_b", category: "lipids", unit: "mg/dL" },
+  { label: "Apolipoprotein A1 (ApoA1)", slug: "apolipoprotein_a1", category: "lipids", unit: "mg/dL" },
+  { label: "Lipoprotein(a) [Lp(a)]", slug: "lipoprotein_a", category: "lipids", unit: "nmol/L" },
+  { label: "LDL Cholesterol", slug: "ldl_cholesterol", category: "lipids", unit: "mg/dL" },
+  { label: "HDL Cholesterol", slug: "hdl_cholesterol", category: "lipids", unit: "mg/dL" },
+  { label: "Triglycerides", slug: "triglycerides", category: "lipids", unit: "mg/dL" },
+  { label: "Total Cholesterol", slug: "total_cholesterol", category: "lipids", unit: "mg/dL" },
+  { label: "Non-HDL Cholesterol", slug: "non_hdl_cholesterol", category: "lipids", unit: "mg/dL" },
+  { label: "LDL Particle Number (LDL-P)", slug: "ldl_particle_number", category: "lipids", unit: "nmol/L" },
+  { label: "Small LDL-P", slug: "small_ldl_p", category: "lipids", unit: "nmol/L" },
+  { label: "LDL Size", slug: "ldl_size", category: "lipids", unit: "nm" },
+  { label: "HDL Large", slug: "hdl_large", category: "lipids", unit: "umol/L" },
+  { label: "Glucose", slug: "glucose", category: "metabolic", unit: "mg/dL" },
+  { label: "Hemoglobin A1C", slug: "hemoglobin_a1c", category: "metabolic", unit: "%" },
+  { label: "Insulin", slug: "insulin", category: "metabolic", unit: "uIU/mL" },
+  { label: "C-Peptide", slug: "c_peptide", category: "metabolic", unit: "ng/mL" },
+  { label: "Uric Acid", slug: "uric_acid", category: "metabolic", unit: "mg/dL" },
+  { label: "hs-CRP", slug: "hs_crp", category: "inflammation", unit: "mg/L" },
+  { label: "Homocysteine", slug: "homocysteine", category: "inflammation", unit: "umol/L" },
+  { label: "Ferritin", slug: "ferritin", category: "vitamins", unit: "ng/mL" },
+  { label: "Iron", slug: "iron", category: "vitamins", unit: "mcg/dL" },
+  { label: "TIBC", slug: "tibc", category: "vitamins", unit: "mcg/dL" },
+  { label: "Iron Saturation", slug: "iron_saturation", category: "vitamins", unit: "%" },
+  { label: "Vitamin D, 25-OH", slug: "vitamin_d_25_oh", category: "vitamins", unit: "ng/mL" },
+  { label: "Vitamin B12", slug: "vitamin_b12", category: "vitamins", unit: "pg/mL" },
+  { label: "Folate", slug: "folate", category: "vitamins", unit: "ng/mL" },
+  { label: "Magnesium", slug: "magnesium", category: "electrolytes", unit: "mg/dL" },
+  { label: "Calcium", slug: "calcium", category: "electrolytes", unit: "mg/dL" },
+  { label: "Sodium", slug: "sodium", category: "electrolytes", unit: "mmol/L" },
+  { label: "Potassium", slug: "potassium", category: "electrolytes", unit: "mmol/L" },
+  { label: "Chloride", slug: "chloride", category: "electrolytes", unit: "mmol/L" },
+  { label: "Carbon Dioxide", slug: "carbon_dioxide", category: "electrolytes", unit: "mmol/L" },
+  { label: "Total Testosterone", slug: "total_testosterone", category: "hormones", unit: "ng/dL" },
+  { label: "Free Testosterone", slug: "free_testosterone", category: "hormones", unit: "pg/mL" },
+  { label: "Bioavailable Testosterone", slug: "bioavailable_testosterone", category: "hormones", unit: "ng/dL" },
+  { label: "Sex Hormone Binding Globulin (SHBG)", slug: "shbg", category: "hormones", unit: "nmol/L" },
+  { label: "Estradiol", slug: "estradiol", category: "hormones", unit: "pg/mL" },
+  { label: "DHEA-S", slug: "dhea_s", category: "hormones", unit: "mcg/dL" },
+  { label: "LH", slug: "lh", category: "hormones", unit: "mIU/mL" },
+  { label: "FSH", slug: "fsh", category: "hormones", unit: "mIU/mL" },
+  { label: "Prolactin", slug: "prolactin", category: "hormones", unit: "ng/mL" },
+  { label: "PSA Total", slug: "psa_total", category: "hormones", unit: "ng/mL" },
+  { label: "PSA Free", slug: "psa_free", category: "hormones", unit: "ng/mL" },
+  { label: "TSH", slug: "tsh", category: "thyroid", unit: "mIU/L" },
+  { label: "Free T4", slug: "free_t4", category: "thyroid", unit: "ng/dL" },
+  { label: "Free T3", slug: "free_t3", category: "thyroid", unit: "pg/mL" },
+  { label: "Total T4", slug: "total_t4", category: "thyroid", unit: "mcg/dL" },
+  { label: "Total T3", slug: "total_t3", category: "thyroid", unit: "ng/dL" },
+  { label: "Thyroid Peroxidase Antibodies (TPO)", slug: "tpo_antibodies", category: "thyroid", unit: "IU/mL" },
+  { label: "Thyroglobulin Antibodies", slug: "thyroglobulin_antibodies", category: "thyroid", unit: "IU/mL" },
+  { label: "AST", slug: "ast", category: "liver", unit: "U/L" },
+  { label: "ALT", slug: "alt", category: "liver", unit: "U/L" },
+  { label: "Alkaline Phosphatase", slug: "alkaline_phosphatase", category: "liver", unit: "U/L" },
+  { label: "Bilirubin Total", slug: "bilirubin_total", category: "liver", unit: "mg/dL" },
+  { label: "Albumin", slug: "albumin", category: "liver", unit: "g/dL" },
+  { label: "Globulin", slug: "globulin", category: "liver", unit: "g/dL" },
+  { label: "Total Protein", slug: "total_protein", category: "liver", unit: "g/dL" },
+  { label: "GGT", slug: "ggt", category: "liver", unit: "U/L" },
+  { label: "Creatinine", slug: "creatinine", category: "kidney", unit: "mg/dL" },
+  { label: "eGFR", slug: "egfr", category: "kidney", unit: "mL/min/1.73m2" },
+  { label: "BUN", slug: "bun", category: "kidney", unit: "mg/dL" },
+  { label: "BUN/Creatinine Ratio", slug: "bun_creatinine_ratio", category: "kidney", unit: "" },
+  { label: "Cystatin C", slug: "cystatin_c", category: "kidney", unit: "mg/L" },
+  { label: "White Blood Cell Count", slug: "white_blood_cell_count", category: "cbc", unit: "Thousand/uL" },
+  { label: "Red Blood Cell Count", slug: "red_blood_cell_count", category: "cbc", unit: "Million/uL" },
+  { label: "Hemoglobin", slug: "hemoglobin", category: "cbc", unit: "g/dL" },
+  { label: "Hematocrit", slug: "hematocrit", category: "cbc", unit: "%" },
+  { label: "MCV", slug: "mcv", category: "cbc", unit: "fL" },
+  { label: "MCH", slug: "mch", category: "cbc", unit: "pg" },
+  { label: "MCHC", slug: "mchc", category: "cbc", unit: "g/dL" },
+  { label: "RDW", slug: "rdw", category: "cbc", unit: "%" },
+  { label: "Platelet Count", slug: "platelet_count", category: "cbc", unit: "Thousand/uL" },
+  { label: "MPV", slug: "mpv", category: "cbc", unit: "fL" },
+  { label: "Neutrophils", slug: "neutrophils", category: "cbc", unit: "%" },
+  { label: "Lymphocytes", slug: "lymphocytes", category: "cbc", unit: "%" },
+  { label: "Monocytes", slug: "monocytes", category: "cbc", unit: "%" },
+  { label: "Eosinophils", slug: "eosinophils", category: "cbc", unit: "%" },
+  { label: "Basophils", slug: "basophils", category: "cbc", unit: "%" },
+  { label: "Absolute Neutrophils", slug: "absolute_neutrophils", category: "cbc", unit: "cells/uL" },
+  { label: "Absolute Lymphocytes", slug: "absolute_lymphocytes", category: "cbc", unit: "cells/uL" },
+  { label: "Absolute Monocytes", slug: "absolute_monocytes", category: "cbc", unit: "cells/uL" },
+  { label: "Absolute Eosinophils", slug: "absolute_eosinophils", category: "cbc", unit: "cells/uL" },
+  { label: "Absolute Basophils", slug: "absolute_basophils", category: "cbc", unit: "cells/uL" },
+  { label: "Insulin-Like Growth Factor 1 (IGF-1)", slug: "igf_1", category: "hormones", unit: "ng/mL" },
+  { label: "Cortisol", slug: "cortisol", category: "hormones", unit: "mcg/dL" },
+  { label: "Urobilinogen", slug: "urobilinogen", category: "other", unit: "" },
+  { label: "Microalbumin/Creatinine Ratio", slug: "microalbumin_creatinine_ratio", category: "kidney", unit: "mcg/mg creat" },
+  { label: "Microalbumin", slug: "microalbumin", category: "kidney", unit: "mg/dL" },
+  { label: "Creatinine, Random Urine", slug: "creatinine_random_urine", category: "kidney", unit: "mg/dL" }
+];
+
+const MARKER_OPTIONS = MARKER_LIBRARY.map((m) => m.label);
+
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -47,12 +141,12 @@ function findMarker(markers, names) {
 function buildCoaching(markers) {
   const notes = [];
 
-  const apoB = findMarker(markers, ["apob", "apo b"]);
-  const ldl = findMarker(markers, ["ldl"]);
-  const hdl = findMarker(markers, ["hdl"]);
-  const triglycerides = findMarker(markers, ["triglycerides", "trigs"]);
+  const apoB = findMarker(markers, ["apob", "apolipoprotein b"]);
+  const ldl = findMarker(markers, ["ldl cholesterol", "ldl"]);
+  const hdl = findMarker(markers, ["hdl cholesterol", "hdl"]);
+  const triglycerides = findMarker(markers, ["triglycerides"]);
   const glucose = findMarker(markers, ["glucose"]);
-  const a1c = findMarker(markers, ["a1c", "hemoglobin a1c"]);
+  const a1c = findMarker(markers, ["hemoglobin a1c", "a1c"]);
   const insulin = findMarker(markers, ["insulin"]);
   const crp = findMarker(markers, ["hs-crp", "crp"]);
   const vitaminD = findMarker(markers, ["vitamin d"]);
@@ -62,22 +156,16 @@ function buildCoaching(markers) {
   const apoBVal = getMarkerValue(apoB);
   if (apoBVal !== null) {
     if (apoBVal >= 90) {
-      notes.push(
-        `ApoB is ${apoBVal}, which is above an ideal cardiovascular target for many people. This is worth reviewing with your clinician.`
-      );
+      notes.push(`ApoB is ${apoBVal}, which is above an ideal cardiovascular target for many people. This is worth reviewing with your clinician.`);
     } else {
-      notes.push(
-        `ApoB is ${apoBVal}, which is a strong cardiovascular marker to keep tracking over time.`
-      );
+      notes.push(`ApoB is ${apoBVal}, which is a strong cardiovascular marker to keep tracking over time.`);
     }
   }
 
   const ldlVal = getMarkerValue(ldl);
   if (ldlVal !== null) {
     if (ldlVal >= 100) {
-      notes.push(
-        `LDL is ${ldlVal}. If this stays elevated, it is worth pairing with ApoB, triglycerides, and family history when reviewing risk.`
-      );
+      notes.push(`LDL is ${ldlVal}. If this stays elevated, it is worth pairing with ApoB, triglycerides, and family history when reviewing risk.`);
     } else {
       notes.push(`LDL is ${ldlVal}, which is a favorable result to maintain.`);
     }
@@ -85,106 +173,74 @@ function buildCoaching(markers) {
 
   const hdlVal = getMarkerValue(hdl);
   if (hdlVal !== null && hdlVal < 40) {
-    notes.push(
-      `HDL is ${hdlVal}, which may improve with consistent training, better sleep, and body composition improvements.`
-    );
+    notes.push(`HDL is ${hdlVal}, which may improve with consistent training, better sleep, and body composition improvements.`);
   }
 
   const trigVal = getMarkerValue(triglycerides);
   if (trigVal !== null) {
     if (trigVal >= 150) {
-      notes.push(
-        `Triglycerides are ${trigVal}. Reducing alcohol, tightening calorie balance, and improving insulin sensitivity can help.`
-      );
+      notes.push(`Triglycerides are ${trigVal}. Reducing alcohol, tightening calorie balance, and improving insulin sensitivity can help.`);
     } else {
-      notes.push(
-        `Triglycerides are ${trigVal}, which is a positive metabolic sign.`
-      );
+      notes.push(`Triglycerides are ${trigVal}, which is a positive metabolic sign.`);
     }
   }
 
   const glucoseVal = getMarkerValue(glucose);
   if (glucoseVal !== null && glucoseVal >= 100) {
-    notes.push(
-      `Glucose is ${glucoseVal}. That may point toward blood sugar control issues, especially when paired with insulin and A1C.`
-    );
+    notes.push(`Glucose is ${glucoseVal}. That may point toward blood sugar control issues, especially when paired with insulin and A1C.`);
   }
 
   const a1cVal = getMarkerValue(a1c);
   if (a1cVal !== null) {
     if (a1cVal >= 5.7) {
-      notes.push(
-        `A1C is ${a1cVal}. This is worth paying attention to for blood sugar control and insulin resistance risk.`
-      );
+      notes.push(`A1C is ${a1cVal}. This is worth paying attention to for blood sugar control and insulin resistance risk.`);
     } else {
-      notes.push(
-        `A1C is ${a1cVal}, which is a solid long-term blood sugar marker.`
-      );
+      notes.push(`A1C is ${a1cVal}, which is a solid long-term blood sugar marker.`);
     }
   }
 
   const insulinVal = getMarkerValue(insulin);
   if (insulinVal !== null && insulinVal > 10) {
-    notes.push(
-      `Fasting insulin is ${insulinVal}. Even when glucose looks okay, higher insulin can suggest insulin resistance is developing.`
-    );
+    notes.push(`Fasting insulin is ${insulinVal}. Even when glucose looks okay, higher insulin can suggest insulin resistance is developing.`);
   }
 
   const crpVal = getMarkerValue(crp);
   if (crpVal !== null) {
     if (crpVal > 1) {
-      notes.push(
-        `hs-CRP is ${crpVal}, suggesting inflammation is worth monitoring. Sleep, recovery, illness, and body-fat levels can affect this.`
-      );
+      notes.push(`hs-CRP is ${crpVal}, suggesting inflammation is worth monitoring. Sleep, recovery, illness, and body-fat levels can affect this.`);
     } else {
-      notes.push(
-        `hs-CRP is ${crpVal}, which is encouraging from an inflammation standpoint.`
-      );
+      notes.push(`hs-CRP is ${crpVal}, which is encouraging from an inflammation standpoint.`);
     }
   }
 
   const vitaminDVal = getMarkerValue(vitaminD);
   if (vitaminDVal !== null) {
     if (vitaminDVal < 30) {
-      notes.push(
-        `Vitamin D is ${vitaminDVal}. That is commonly discussed for improvement with sunlight exposure or supplementation under clinician guidance.`
-      );
+      notes.push(`Vitamin D is ${vitaminDVal}. That is commonly discussed for improvement with sunlight exposure or supplementation under clinician guidance.`);
     } else {
-      notes.push(
-        `Vitamin D is ${vitaminDVal}, which is a solid level to maintain.`
-      );
+      notes.push(`Vitamin D is ${vitaminDVal}, which is a solid level to maintain.`);
     }
   }
 
   const testosteroneVal = getMarkerValue(testosterone);
   if (testosteroneVal !== null) {
     if (testosteroneVal < 500) {
-      notes.push(
-        `Total testosterone is ${testosteroneVal}. If symptoms exist, this is worth reviewing alongside free testosterone, SHBG, sleep, calories, and recovery.`
-      );
+      notes.push(`Total testosterone is ${testosteroneVal}. If symptoms exist, this is worth reviewing alongside free testosterone, SHBG, sleep, calories, and recovery.`);
     } else {
-      notes.push(
-        `Total testosterone is ${testosteroneVal}, which is a strong number to track over time.`
-      );
+      notes.push(`Total testosterone is ${testosteroneVal}, which is a strong number to track over time.`);
     }
   }
 
   const tshVal = getMarkerValue(tsh);
   if (tshVal !== null && tshVal > 4) {
-    notes.push(
-      `TSH is ${tshVal}. That may be worth discussing with your clinician alongside free T4, free T3, symptoms, and thyroid antibodies.`
-    );
+    notes.push(`TSH is ${tshVal}. That may be worth discussing with your clinician alongside free T4, free T3, symptoms, and thyroid antibodies.`);
   }
 
   if (!notes.length) {
-    notes.push(
-      "Your lab panel is saved. Add more markers over time so the coaching becomes more useful."
-    );
+    notes.push("Your lab panel is saved. Add more markers over time so the coaching becomes more useful.");
   }
 
-  notes.push(
-    "This coaching is educational and trend-focused, not a diagnosis. Use it to guide questions for your clinician."
-  );
+  notes.push("This coaching is educational and trend-focused, not a diagnosis. Use it to guide questions for your clinician.");
 
   return notes;
 }
@@ -206,6 +262,10 @@ function blankMarker() {
     category: "other",
     notes: ""
   };
+}
+
+function getLibraryMarkerByLabel(label) {
+  return MARKER_LIBRARY.find((m) => m.label === label) || null;
 }
 
 export default function Home() {
@@ -334,7 +394,17 @@ export default function Home() {
         const updated = { ...marker, [field]: value };
 
         if (field === "marker_name") {
-          updated.marker_slug = makeSlug(value);
+          const libraryMarker = getLibraryMarkerByLabel(value);
+          if (libraryMarker) {
+            updated.marker_name = libraryMarker.label;
+            updated.marker_slug = libraryMarker.slug;
+            updated.category = libraryMarker.category;
+            if (!updated.unit) {
+              updated.unit = libraryMarker.unit || "";
+            }
+          } else {
+            updated.marker_slug = makeSlug(value);
+          }
         }
 
         if (field === "value" || field === "value_numeric") {
@@ -378,7 +448,7 @@ export default function Home() {
           panel_date: panelDate,
           lab_name: labName || null,
           marker_name: String(marker.marker_name || "").trim(),
-          marker_slug: makeSlug(marker.marker_name || marker.marker_slug || ""),
+          marker_slug: marker.marker_slug || makeSlug(marker.marker_name || ""),
           value: safeNumber(marker.value),
           value_numeric: safeNumber(marker.value_numeric ?? marker.value),
           value_text:
@@ -511,7 +581,7 @@ export default function Home() {
 
       <h2>Manual Bloodwork Entry</h2>
 
-      <div style={{ display: "grid", gap: 12, maxWidth: 800 }}>
+      <div style={{ display: "grid", gap: 12, maxWidth: 900 }}>
         <label>Panel Date</label>
         <input
           type="date"
@@ -537,9 +607,15 @@ export default function Home() {
         <div style={{ marginTop: 12 }}>
           <h3>Enter Markers</h3>
           <p style={{ opacity: 0.8 }}>
-            Add the markers you care about. You can always add more later.
+            Use the searchable marker dropdown for standardized names. If a marker is not listed, type your own custom name.
           </p>
         </div>
+
+        <datalist id="marker-options">
+          {MARKER_OPTIONS.map((option) => (
+            <option key={option} value={option} />
+          ))}
+        </datalist>
 
         <div style={{ display: "grid", gap: 12 }}>
           {draftMarkers.map((marker) => (
@@ -580,6 +656,7 @@ export default function Home() {
                   <div>Marker Name</div>
                   <input
                     type="text"
+                    list="marker-options"
                     value={marker.marker_name}
                     onChange={(e) =>
                       updateDraftMarker(
@@ -589,6 +666,7 @@ export default function Home() {
                       )
                     }
                     style={{ width: "100%" }}
+                    placeholder="Start typing a marker..."
                   />
                 </div>
 
