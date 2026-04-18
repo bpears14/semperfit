@@ -178,7 +178,7 @@ function buildCoaching(markers) {
 
   if (!notes.length) {
     notes.push(
-      "Your lab draft is ready for review. Confirm or edit any values that look off before saving."
+      "Your lab panel is saved. Add more markers over time so the coaching becomes more useful."
     );
   }
 
@@ -187,6 +187,25 @@ function buildCoaching(markers) {
   );
 
   return notes;
+}
+
+function blankMarker() {
+  return {
+    local_id: `${Date.now()}-${Math.random()}`,
+    marker_name: "",
+    marker_slug: "",
+    value: null,
+    value_numeric: null,
+    value_text: "",
+    unit: "",
+    reference_range: "",
+    reference_range_low: null,
+    reference_range_high: null,
+    optimal_range: "",
+    flag: "unknown",
+    category: "other",
+    notes: ""
+  };
 }
 
 export default function Home() {
@@ -199,13 +218,16 @@ export default function Home() {
 
   const [panelDate, setPanelDate] = useState(todayISO());
   const [labName, setLabName] = useState("");
-  const [labFile, setLabFile] = useState(null);
+  const [reportFile, setReportFile] = useState(null);
 
-  const [draftMarkers, setDraftMarkers] = useState([]);
+  const [draftMarkers, setDraftMarkers] = useState([
+    blankMarker(),
+    blankMarker(),
+    blankMarker()
+  ]);
+
   const [bloodworkPanels, setBloodworkPanels] = useState([]);
   const [bloodworkMarkers, setBloodworkMarkers] = useState([]);
-  const [coaching, setCoaching] = useState([]);
-  const [isExtracting, setIsExtracting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -272,112 +294,35 @@ export default function Home() {
     await supabase.auth.signOut();
   }
 
-  function fileToDataUrl(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error("Could not read file"));
-      reader.readAsDataURL(file);
-    });
+  async function uploadReportFile(file) {
+    if (!file || !session?.user) return null;
+
+    const safeName = file.name.replace(/\s+/g, "-");
+    const path = `${session.user.id}/lab-reports/${Date.now()}-${safeName}`;
+
+    const { error } = await supabase.storage
+      .from("lab-reports")
+      .upload(path, file, { upsert: true });
+
+    if (error) {
+      throw error;
+    }
+
+    return path;
   }
 
-  function normalizeDraftMarkers(markers) {
-    return markers.map((marker, index) => {
-      const numeric =
-        marker?.value_numeric !== null &&
-        marker?.value_numeric !== undefined &&
-        marker?.value_numeric !== ""
-          ? Number(marker.value_numeric)
-          : null;
+  async function openReport(path) {
+    const { data, error } = await supabase.storage
+      .from("lab-reports")
+      .createSignedUrl(path, 60);
 
-      return {
-        local_id: `${Date.now()}-${index}`,
-        marker_name: marker.marker_name || "",
-        marker_slug: makeSlug(marker.marker_name || marker.marker_slug || ""),
-        value: numeric,
-        value_numeric: numeric,
-        value_text:
-          marker.value_text ??
-          (numeric !== null && !Number.isNaN(numeric) ? String(numeric) : ""),
-        unit: marker.unit || "",
-        reference_range: marker.reference_range || "",
-        reference_range_low: null,
-        reference_range_high: null,
-        optimal_range: marker.optimal_range || "",
-        flag: marker.flag || "unknown",
-        category: marker.category || "other",
-        notes: ""
-      };
-    });
-  }
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
 
-  async function extractLabDraft() {
-    try {
-      setMessage("");
-      setDraftMarkers([]);
-      setCoaching([]);
-
-      if (!session?.user) {
-        setMessage("You must be signed in.");
-        return;
-      }
-
-      if (!labFile) {
-        setMessage("Please choose a lab file first.");
-        return;
-      }
-
-      setIsExtracting(true);
-      setMessage(
-        labFile.type === "application/pdf" ? "Uploading PDF..." : "Reading image..."
-      );
-
-      const fileDataUrl = await fileToDataUrl(labFile);
-
-      setMessage("Extracting draft markers with AI...");
-
-      const res = await fetch(
-        "https://kljdmgemuebziqdawmsh.supabase.co/functions/v1/parse-bloodwork",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify({
-            imageDataUrl: fileDataUrl,
-            fileName: labFile.name,
-            mimeType: labFile.type,
-            labName
-          })
-        }
-      );
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        setMessage(result?.error || "AI parser failed");
-        return;
-      }
-
-      const parsedMarkers = Array.isArray(result?.markers) ? result.markers : [];
-      const normalized = normalizeDraftMarkers(parsedMarkers);
-
-      setDraftMarkers(normalized);
-
-      if (normalized.length) {
-        setCoaching(buildCoaching(normalized));
-        setMessage(
-          `Draft ready. Review ${normalized.length} extracted markers, fix anything wrong, then click Confirm + Save Results.`
-        );
-      } else {
-        setMessage("No markers detected from that file.");
-      }
-    } catch (err) {
-      setMessage(err.message || "Something went wrong.");
-    } finally {
-      setIsExtracting(false);
+    if (data?.signedUrl) {
+      window.open(data.signedUrl, "_blank");
     }
   }
 
@@ -407,33 +352,17 @@ export default function Home() {
 
   function removeDraftMarker(localId) {
     setDraftMarkers((current) =>
-      current.filter((marker) => marker.local_id !== localId)
+      current.length <= 1
+        ? [blankMarker()]
+        : current.filter((marker) => marker.local_id !== localId)
     );
   }
 
   function addBlankDraftMarker() {
-    setDraftMarkers((current) => [
-      ...current,
-      {
-        local_id: `${Date.now()}-new`,
-        marker_name: "",
-        marker_slug: "",
-        value: null,
-        value_numeric: null,
-        value_text: "",
-        unit: "",
-        reference_range: "",
-        reference_range_low: null,
-        reference_range_high: null,
-        optimal_range: "",
-        flag: "unknown",
-        category: "other",
-        notes: ""
-      }
-    ]);
+    setDraftMarkers((current) => [...current, blankMarker()]);
   }
 
-  async function confirmAndSaveResults() {
+  async function saveManualPanel() {
     try {
       setMessage("");
 
@@ -441,14 +370,6 @@ export default function Home() {
         setMessage("You must be signed in.");
         return;
       }
-
-      if (!draftMarkers.length) {
-        setMessage("There is no draft to save.");
-        return;
-      }
-
-      setIsSaving(true);
-      setMessage("Saving confirmed results...");
 
       const cleanedRows = draftMarkers
         .map((marker) => ({
@@ -477,8 +398,15 @@ export default function Home() {
         .filter((marker) => marker.marker_name);
 
       if (!cleanedRows.length) {
-        setMessage("Please keep at least one marker before saving.");
+        setMessage("Enter at least one marker before saving.");
         return;
+      }
+
+      setIsSaving(true);
+
+      let reportPath = null;
+      if (reportFile) {
+        reportPath = await uploadReportFile(reportFile);
       }
 
       const summary = buildCoaching(cleanedRows);
@@ -489,7 +417,8 @@ export default function Home() {
           user_id: session.user.id,
           panel_date: panelDate,
           lab_name: labName || null,
-          notes: summary.join("\n")
+          notes: summary.join("\n"),
+          report_file: reportPath
         })
         .select()
         .single();
@@ -513,10 +442,11 @@ export default function Home() {
         return;
       }
 
-      setCoaching(summary);
-      setDraftMarkers([]);
-      setLabFile(null);
-      setMessage(`Saved ${rowsToInsert.length} confirmed markers successfully.`);
+      setDraftMarkers([blankMarker(), blankMarker(), blankMarker()]);
+      setReportFile(null);
+      setLabName("");
+      setPanelDate(todayISO());
+      setMessage(`Saved panel with ${rowsToInsert.length} markers.`);
       await loadLabHistory();
     } catch (err) {
       setMessage(err.message || "Something went wrong.");
@@ -548,7 +478,6 @@ export default function Home() {
             onChange={(e) => setEmail(e.target.value)}
             style={{ padding: 10 }}
           />
-
           <input
             type="password"
             placeholder="Password"
@@ -556,7 +485,6 @@ export default function Home() {
             onChange={(e) => setPassword(e.target.value)}
             style={{ padding: 10 }}
           />
-
           <div style={{ display: "flex", gap: 12 }}>
             <button type="button" onClick={signIn}>
               Sign In
@@ -565,7 +493,6 @@ export default function Home() {
               Create Account
             </button>
           </div>
-
           <p>{message}</p>
         </div>
       </div>
@@ -582,9 +509,9 @@ export default function Home() {
         </button>
       </div>
 
-      <h2>Universal Lab Import</h2>
+      <h2>Manual Bloodwork Entry</h2>
 
-      <div style={{ display: "grid", gap: 12, maxWidth: 700 }}>
+      <div style={{ display: "grid", gap: 12, maxWidth: 800 }}>
         <label>Panel Date</label>
         <input
           type="date"
@@ -600,191 +527,155 @@ export default function Home() {
           placeholder="Quest, Labcorp, Function Health, etc."
         />
 
-        <label>Lab File</label>
+        <label>Attach PDF for record keeping (optional)</label>
         <input
           type="file"
-          accept="image/*,.pdf,application/pdf"
-          onChange={(e) => setLabFile(e.target.files?.[0] || null)}
+          accept=".pdf,application/pdf"
+          onChange={(e) => setReportFile(e.target.files?.[0] || null)}
         />
 
+        <div style={{ marginTop: 12 }}>
+          <h3>Enter Markers</h3>
+          <p style={{ opacity: 0.8 }}>
+            Add the markers you care about. You can always add more later.
+          </p>
+        </div>
+
+        <div style={{ display: "grid", gap: 12 }}>
+          {draftMarkers.map((marker) => (
+            <div
+              key={marker.local_id}
+              style={{
+                border: "1px solid #ccc",
+                borderRadius: 10,
+                padding: 16,
+                display: "grid",
+                gap: 10
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 12
+                }}
+              >
+                <strong>{marker.marker_name || "New Marker"}</strong>
+                <button
+                  type="button"
+                  onClick={() => removeDraftMarker(marker.local_id)}
+                >
+                  Remove
+                </button>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                  gap: 12
+                }}
+              >
+                <div>
+                  <div>Marker Name</div>
+                  <input
+                    type="text"
+                    value={marker.marker_name}
+                    onChange={(e) =>
+                      updateDraftMarker(
+                        marker.local_id,
+                        "marker_name",
+                        e.target.value
+                      )
+                    }
+                    style={{ width: "100%" }}
+                  />
+                </div>
+
+                <div>
+                  <div>Value</div>
+                  <input
+                    type="text"
+                    value={marker.value_text}
+                    onChange={(e) =>
+                      updateDraftMarker(marker.local_id, "value", e.target.value)
+                    }
+                    style={{ width: "100%" }}
+                  />
+                </div>
+
+                <div>
+                  <div>Unit</div>
+                  <input
+                    type="text"
+                    value={marker.unit}
+                    onChange={(e) =>
+                      updateDraftMarker(marker.local_id, "unit", e.target.value)
+                    }
+                    style={{ width: "100%" }}
+                  />
+                </div>
+
+                <div>
+                  <div>Reference Range</div>
+                  <input
+                    type="text"
+                    value={marker.reference_range}
+                    onChange={(e) =>
+                      updateDraftMarker(
+                        marker.local_id,
+                        "reference_range",
+                        e.target.value
+                      )
+                    }
+                    style={{ width: "100%" }}
+                  />
+                </div>
+
+                <div>
+                  <div>Flag</div>
+                  <input
+                    type="text"
+                    value={marker.flag}
+                    onChange={(e) =>
+                      updateDraftMarker(marker.local_id, "flag", e.target.value)
+                    }
+                    style={{ width: "100%" }}
+                  />
+                </div>
+
+                <div>
+                  <div>Category</div>
+                  <input
+                    type="text"
+                    value={marker.category}
+                    onChange={(e) =>
+                      updateDraftMarker(
+                        marker.local_id,
+                        "category",
+                        e.target.value
+                      )
+                    }
+                    style={{ width: "100%" }}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <button
-            type="button"
-            onClick={extractLabDraft}
-            disabled={isExtracting}
-          >
-            {isExtracting ? "Extracting Draft..." : "Upload + Extract Draft"}
-          </button>
-
-          <button
-            type="button"
-            onClick={confirmAndSaveResults}
-            disabled={isSaving || !draftMarkers.length}
-          >
-            {isSaving ? "Saving..." : "Confirm + Save Results"}
-          </button>
-
           <button type="button" onClick={addBlankDraftMarker}>
             Add Marker
+          </button>
+
+          <button type="button" onClick={saveManualPanel} disabled={isSaving}>
+            {isSaving ? "Saving..." : "Save Panel"}
           </button>
         </div>
 
         <p>{message}</p>
       </div>
-
-      {draftMarkers.length > 0 && (
-        <div style={{ marginTop: 32 }}>
-          <h3>Review Extracted Results Before Saving</h3>
-
-          <div style={{ display: "grid", gap: 12 }}>
-            {draftMarkers.map((marker) => (
-              <div
-                key={marker.local_id}
-                style={{
-                  border: "1px solid #ccc",
-                  borderRadius: 10,
-                  padding: 16,
-                  display: "grid",
-                  gap: 10
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 12
-                  }}
-                >
-                  <strong>{marker.marker_name || "New Marker"}</strong>
-                  <button
-                    type="button"
-                    onClick={() => removeDraftMarker(marker.local_id)}
-                  >
-                    Remove
-                  </button>
-                </div>
-
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                    gap: 12
-                  }}
-                >
-                  <div>
-                    <div>Marker Name</div>
-                    <input
-                      type="text"
-                      value={marker.marker_name}
-                      onChange={(e) =>
-                        updateDraftMarker(
-                          marker.local_id,
-                          "marker_name",
-                          e.target.value
-                        )
-                      }
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-
-                  <div>
-                    <div>Value</div>
-                    <input
-                      type="text"
-                      value={marker.value_text}
-                      onChange={(e) =>
-                        updateDraftMarker(
-                          marker.local_id,
-                          "value",
-                          e.target.value
-                        )
-                      }
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-
-                  <div>
-                    <div>Unit</div>
-                    <input
-                      type="text"
-                      value={marker.unit}
-                      onChange={(e) =>
-                        updateDraftMarker(
-                          marker.local_id,
-                          "unit",
-                          e.target.value
-                        )
-                      }
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-
-                  <div>
-                    <div>Reference Range</div>
-                    <input
-                      type="text"
-                      value={marker.reference_range}
-                      onChange={(e) =>
-                        updateDraftMarker(
-                          marker.local_id,
-                          "reference_range",
-                          e.target.value
-                        )
-                      }
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-
-                  <div>
-                    <div>Flag</div>
-                    <input
-                      type="text"
-                      value={marker.flag}
-                      onChange={(e) =>
-                        updateDraftMarker(
-                          marker.local_id,
-                          "flag",
-                          e.target.value
-                        )
-                      }
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-
-                  <div>
-                    <div>Category</div>
-                    <input
-                      type="text"
-                      value={marker.category}
-                      onChange={(e) =>
-                        updateDraftMarker(
-                          marker.local_id,
-                          "category",
-                          e.target.value
-                        )
-                      }
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {coaching.length > 0 && (
-        <div style={{ marginTop: 32 }}>
-          <h3>AI Coaching Preview</h3>
-          <ul>
-            {coaching.map((item, i) => (
-              <li key={i} style={{ marginBottom: 8 }}>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       <hr style={{ margin: "32px 0" }} />
 
@@ -806,6 +697,17 @@ export default function Home() {
               <div style={{ marginBottom: 12 }}>
                 <strong>{panel.lab_name || "Lab Panel"}</strong>
                 <div>{panel.panel_date}</div>
+
+                {panel.report_file ? (
+                  <div style={{ marginTop: 10 }}>
+                    <button
+                      type="button"
+                      onClick={() => openReport(panel.report_file)}
+                    >
+                      Open Attached PDF
+                    </button>
+                  </div>
+                ) : null}
               </div>
 
               {!markers.length ? (
