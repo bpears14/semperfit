@@ -346,7 +346,7 @@ export default function Home() {
             Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
           },
           body: JSON.stringify({
-            fileDataUrl,
+            imageDataUrl: fileDataUrl,
             fileName: labFile.name,
             mimeType: labFile.type,
             labName
