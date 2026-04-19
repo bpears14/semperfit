@@ -1444,44 +1444,45 @@ function addBlankBloodworkDraftMarker() {
                     </div>
 
                     <div
-                      style={{
-                        padding: "8px 0",
-                        borderBottom: "1px solid rgba(255,255,255,.06)"
-                      }}
-                    >
-                      <div className="muted" style={{ marginBottom: 8 }}>
-                        Side photo
-                      </div>
-                      {sideUrl ? (
-                        <a href={sideUrl} target="_blank" rel="noreferrer">
-                          <img
-                            src={sideUrl}
-                            alt="Side progress"
-                            style={{ width: 180, borderRadius: 12, display: "block" }}
-                          />
-                        </a>
-                      ) : (
-                        <div>No file</div>
-                      )}
-                    </div>
-
-                    <div style={{ padding: "8px 0" }}>
+  style={{
+    padding: "8px 0",
+    borderBottom: "1px solid rgba(255,255,255,.06)"
+  }}
+>
   <div className="muted" style={{ marginBottom: 8 }}>
-    Attached report
+    Side photo
   </div>
-  {item.report_pdf ? (
-    <a
-      href={getStorageUrl("lab-reports", item.report_pdf)}
-      target="_blank"
-      rel="noreferrer"
-    >
-      View Report
+  {sideUrl ? (
+    <a href={sideUrl} target="_blank" rel="noreferrer">
+      <img
+        src={sideUrl}
+        alt="Side progress"
+        style={{ width: 180, borderRadius: 12, display: "block" }}
+      />
     </a>
   ) : (
     <div>No file</div>
   )}
 </div>
-                  </>
+
+<div style={{ padding: "8px 0" }}>
+  <div className="muted" style={{ marginBottom: 8 }}>
+    Back photo
+  </div>
+  {backUrl ? (
+    <a href={backUrl} target="_blank" rel="noreferrer">
+      <img
+        src={backUrl}
+        alt="Back progress"
+        style={{ width: 180, borderRadius: 12, display: "block" }}
+      />
+    </a>
+  ) : (
+    <div>No file</div>
+  )}
+</div>
+
+</>
                 );
               }}
             />
@@ -2034,25 +2035,21 @@ function addBlankBloodworkDraftMarker() {
             <DetailRow label="Panel date" value={item.panel_date} />
             <DetailRow label="Lab name" value={item.lab_name} />
             <div style={{ padding: "8px 0" }}>
-              <div className="muted" style={{ marginBottom: 8 }}>
-                Attached report
-              </div>
-              {item.report_pdf ? (
+  <div className="muted" style={{ marginBottom: 8 }}>
+    Attached report
+  </div>
   {item.report_pdf ? (
-  <a
-    href={getStorageUrl("lab-reports", item.report_pdf)}
-    target="_blank"
-    rel="noreferrer"
-  >
-    View Report
-  </a>
-) : (
-  <div>No file</div>
-)}
-) : (
-                <div>No file</div>
-              )}
-            </div>
+    <a
+      href={getStorageUrl("lab-reports", item.report_pdf)}
+      target="_blank"
+      rel="noreferrer"
+    >
+      View Report
+    </a>
+  ) : (
+    <div>No file</div>
+  )}
+</div>
 
             <div style={{ paddingTop: 8 }}>
               <div className="muted" style={{ marginBottom: 8 }}>
