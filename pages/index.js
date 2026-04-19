@@ -114,7 +114,262 @@ function ExpandableHistoryCard({
     </div>
   );
 }
+const MARKER_LIBRARY = [
+  { label: "Apolipoprotein B (ApoB)", slug: "apolipoprotein_b", category: "lipids", unit: "mg/dL" },
+  { label: "Apolipoprotein A1 (ApoA1)", slug: "apolipoprotein_a1", category: "lipids", unit: "mg/dL" },
+  { label: "Lipoprotein(a) [Lp(a)]", slug: "lipoprotein_a", category: "lipids", unit: "nmol/L" },
+  { label: "LDL Cholesterol", slug: "ldl_cholesterol", category: "lipids", unit: "mg/dL" },
+  { label: "HDL Cholesterol", slug: "hdl_cholesterol", category: "lipids", unit: "mg/dL" },
+  { label: "Triglycerides", slug: "triglycerides", category: "lipids", unit: "mg/dL" },
+  { label: "Total Cholesterol", slug: "total_cholesterol", category: "lipids", unit: "mg/dL" },
+  { label: "Non-HDL Cholesterol", slug: "non_hdl_cholesterol", category: "lipids", unit: "mg/dL" },
+  { label: "LDL Particle Number (LDL-P)", slug: "ldl_particle_number", category: "lipids", unit: "nmol/L" },
+  { label: "Small LDL-P", slug: "small_ldl_p", category: "lipids", unit: "nmol/L" },
+  { label: "LDL Size", slug: "ldl_size", category: "lipids", unit: "nm" },
+  { label: "HDL Large", slug: "hdl_large", category: "lipids", unit: "umol/L" },
+  { label: "Glucose", slug: "glucose", category: "metabolic", unit: "mg/dL" },
+  { label: "Hemoglobin A1C", slug: "hemoglobin_a1c", category: "metabolic", unit: "%" },
+  { label: "Insulin", slug: "insulin", category: "metabolic", unit: "uIU/mL" },
+  { label: "C-Peptide", slug: "c_peptide", category: "metabolic", unit: "ng/mL" },
+  { label: "Uric Acid", slug: "uric_acid", category: "metabolic", unit: "mg/dL" },
+  { label: "hs-CRP", slug: "hs_crp", category: "inflammation", unit: "mg/L" },
+  { label: "Homocysteine", slug: "homocysteine", category: "inflammation", unit: "umol/L" },
+  { label: "Ferritin", slug: "ferritin", category: "vitamins", unit: "ng/mL" },
+  { label: "Iron", slug: "iron", category: "vitamins", unit: "mcg/dL" },
+  { label: "TIBC", slug: "tibc", category: "vitamins", unit: "mcg/dL" },
+  { label: "Iron Saturation", slug: "iron_saturation", category: "vitamins", unit: "%" },
+  { label: "Vitamin D, 25-OH", slug: "vitamin_d_25_oh", category: "vitamins", unit: "ng/mL" },
+  { label: "Vitamin B12", slug: "vitamin_b12", category: "vitamins", unit: "pg/mL" },
+  { label: "Folate", slug: "folate", category: "vitamins", unit: "ng/mL" },
+  { label: "Magnesium", slug: "magnesium", category: "electrolytes", unit: "mg/dL" },
+  { label: "Calcium", slug: "calcium", category: "electrolytes", unit: "mg/dL" },
+  { label: "Sodium", slug: "sodium", category: "electrolytes", unit: "mmol/L" },
+  { label: "Potassium", slug: "potassium", category: "electrolytes", unit: "mmol/L" },
+  { label: "Chloride", slug: "chloride", category: "electrolytes", unit: "mmol/L" },
+  { label: "Carbon Dioxide", slug: "carbon_dioxide", category: "electrolytes", unit: "mmol/L" },
+  { label: "Total Testosterone", slug: "total_testosterone", category: "hormones", unit: "ng/dL" },
+  { label: "Free Testosterone", slug: "free_testosterone", category: "hormones", unit: "pg/mL" },
+  { label: "Bioavailable Testosterone", slug: "bioavailable_testosterone", category: "hormones", unit: "ng/dL" },
+  { label: "Sex Hormone Binding Globulin (SHBG)", slug: "shbg", category: "hormones", unit: "nmol/L" },
+  { label: "Estradiol", slug: "estradiol", category: "hormones", unit: "pg/mL" },
+  { label: "DHEA-S", slug: "dhea_s", category: "hormones", unit: "mcg/dL" },
+  { label: "LH", slug: "lh", category: "hormones", unit: "mIU/mL" },
+  { label: "FSH", slug: "fsh", category: "hormones", unit: "mIU/mL" },
+  { label: "Prolactin", slug: "prolactin", category: "hormones", unit: "ng/mL" },
+  { label: "PSA Total", slug: "psa_total", category: "hormones", unit: "ng/mL" },
+  { label: "PSA Free", slug: "psa_free", category: "hormones", unit: "ng/mL" },
+  { label: "TSH", slug: "tsh", category: "thyroid", unit: "mIU/L" },
+  { label: "Free T4", slug: "free_t4", category: "thyroid", unit: "ng/dL" },
+  { label: "Free T3", slug: "free_t3", category: "thyroid", unit: "pg/mL" },
+  { label: "Total T4", slug: "total_t4", category: "thyroid", unit: "mcg/dL" },
+  { label: "Total T3", slug: "total_t3", category: "thyroid", unit: "ng/dL" },
+  { label: "Thyroid Peroxidase Antibodies (TPO)", slug: "tpo_antibodies", category: "thyroid", unit: "IU/mL" },
+  { label: "Thyroglobulin Antibodies", slug: "thyroglobulin_antibodies", category: "thyroid", unit: "IU/mL" },
+  { label: "AST", slug: "ast", category: "liver", unit: "U/L" },
+  { label: "ALT", slug: "alt", category: "liver", unit: "U/L" },
+  { label: "Alkaline Phosphatase", slug: "alkaline_phosphatase", category: "liver", unit: "U/L" },
+  { label: "Bilirubin Total", slug: "bilirubin_total", category: "liver", unit: "mg/dL" },
+  { label: "Albumin", slug: "albumin", category: "liver", unit: "g/dL" },
+  { label: "Globulin", slug: "globulin", category: "liver", unit: "g/dL" },
+  { label: "Total Protein", slug: "total_protein", category: "liver", unit: "g/dL" },
+  { label: "GGT", slug: "ggt", category: "liver", unit: "U/L" },
+  { label: "Creatinine", slug: "creatinine", category: "kidney", unit: "mg/dL" },
+  { label: "eGFR", slug: "egfr", category: "kidney", unit: "mL/min/1.73m2" },
+  { label: "BUN", slug: "bun", category: "kidney", unit: "mg/dL" },
+  { label: "BUN/Creatinine Ratio", slug: "bun_creatinine_ratio", category: "kidney", unit: "" },
+  { label: "Cystatin C", slug: "cystatin_c", category: "kidney", unit: "mg/L" },
+  { label: "White Blood Cell Count", slug: "white_blood_cell_count", category: "cbc", unit: "Thousand/uL" },
+  { label: "Red Blood Cell Count", slug: "red_blood_cell_count", category: "cbc", unit: "Million/uL" },
+  { label: "Hemoglobin", slug: "hemoglobin", category: "cbc", unit: "g/dL" },
+  { label: "Hematocrit", slug: "hematocrit", category: "cbc", unit: "%" },
+  { label: "MCV", slug: "mcv", category: "cbc", unit: "fL" },
+  { label: "MCH", slug: "mch", category: "cbc", unit: "pg" },
+  { label: "MCHC", slug: "mchc", category: "cbc", unit: "g/dL" },
+  { label: "RDW", slug: "rdw", category: "cbc", unit: "%" },
+  { label: "Platelet Count", slug: "platelet_count", category: "cbc", unit: "Thousand/uL" },
+  { label: "MPV", slug: "mpv", category: "cbc", unit: "fL" },
+  { label: "Neutrophils", slug: "neutrophils", category: "cbc", unit: "%" },
+  { label: "Lymphocytes", slug: "lymphocytes", category: "cbc", unit: "%" },
+  { label: "Monocytes", slug: "monocytes", category: "cbc", unit: "%" },
+  { label: "Eosinophils", slug: "eosinophils", category: "cbc", unit: "%" },
+  { label: "Basophils", slug: "basophils", category: "cbc", unit: "%" },
+  { label: "Absolute Neutrophils", slug: "absolute_neutrophils", category: "cbc", unit: "cells/uL" },
+  { label: "Absolute Lymphocytes", slug: "absolute_lymphocytes", category: "cbc", unit: "cells/uL" },
+  { label: "Absolute Monocytes", slug: "absolute_monocytes", category: "cbc", unit: "cells/uL" },
+  { label: "Absolute Eosinophils", slug: "absolute_eosinophils", category: "cbc", unit: "cells/uL" },
+  { label: "Absolute Basophils", slug: "absolute_basophils", category: "cbc", unit: "cells/uL" },
+  { label: "Insulin-Like Growth Factor 1 (IGF-1)", slug: "igf_1", category: "hormones", unit: "ng/mL" },
+  { label: "Cortisol", slug: "cortisol", category: "hormones", unit: "mcg/dL" },
+  { label: "Urobilinogen", slug: "urobilinogen", category: "other", unit: "" },
+  { label: "Microalbumin/Creatinine Ratio", slug: "microalbumin_creatinine_ratio", category: "kidney", unit: "mcg/mg creat" },
+  { label: "Microalbumin", slug: "microalbumin", category: "kidney", unit: "mg/dL" },
+  { label: "Creatinine, Random Urine", slug: "creatinine_random_urine", category: "kidney", unit: "mg/dL" }
+];
 
+const MARKER_OPTIONS = MARKER_LIBRARY.map((m) => m.label);
+
+function makeSlug(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function getMarkerValue(marker) {
+  const direct = safeNumber(marker?.value_numeric);
+  if (direct !== null) return direct;
+
+  if (marker?.value_text) {
+    const match = String(marker.value_text).match(/-?\d+(\.\d+)?/);
+    if (match) {
+      const parsed = Number(match[0]);
+      return Number.isNaN(parsed) ? null : parsed;
+    }
+  }
+
+  return null;
+}
+
+function findMarker(markers, names) {
+  const lowered = names.map((n) => n.toLowerCase());
+  return markers.find((m) => {
+    const markerName = String(m.marker_name || "").toLowerCase();
+    const markerSlug = String(m.marker_slug || "").toLowerCase();
+    return lowered.some(
+      (name) => markerName.includes(name) || markerSlug.includes(name)
+    );
+  });
+}
+
+function buildCoaching(markers) {
+  const notes = [];
+
+  const apoB = findMarker(markers, ["apob", "apolipoprotein b"]);
+  const ldl = findMarker(markers, ["ldl cholesterol", "ldl"]);
+  const hdl = findMarker(markers, ["hdl cholesterol", "hdl"]);
+  const triglycerides = findMarker(markers, ["triglycerides"]);
+  const glucose = findMarker(markers, ["glucose"]);
+  const a1c = findMarker(markers, ["hemoglobin a1c", "a1c"]);
+  const insulin = findMarker(markers, ["insulin"]);
+  const crp = findMarker(markers, ["hs-crp", "crp"]);
+  const vitaminD = findMarker(markers, ["vitamin d"]);
+  const testosterone = findMarker(markers, ["total testosterone"]);
+  const tsh = findMarker(markers, ["tsh"]);
+
+  const apoBVal = getMarkerValue(apoB);
+  if (apoBVal !== null) {
+    if (apoBVal >= 90) {
+      notes.push(`ApoB is ${apoBVal}, which is above an ideal cardiovascular target for many people. This is worth reviewing with your clinician.`);
+    } else {
+      notes.push(`ApoB is ${apoBVal}, which is a strong cardiovascular marker to keep tracking over time.`);
+    }
+  }
+
+  const ldlVal = getMarkerValue(ldl);
+  if (ldlVal !== null) {
+    if (ldlVal >= 100) {
+      notes.push(`LDL is ${ldlVal}. If this stays elevated, it is worth pairing with ApoB, triglycerides, and family history when reviewing risk.`);
+    } else {
+      notes.push(`LDL is ${ldlVal}, which is a favorable result to maintain.`);
+    }
+  }
+
+  const hdlVal = getMarkerValue(hdl);
+  if (hdlVal !== null && hdlVal < 40) {
+    notes.push(`HDL is ${hdlVal}, which may improve with consistent training, better sleep, and body composition improvements.`);
+  }
+
+  const trigVal = getMarkerValue(triglycerides);
+  if (trigVal !== null) {
+    if (trigVal >= 150) {
+      notes.push(`Triglycerides are ${trigVal}. Reducing alcohol, tightening calorie balance, and improving insulin sensitivity can help.`);
+    } else {
+      notes.push(`Triglycerides are ${trigVal}, which is a positive metabolic sign.`);
+    }
+  }
+
+  const glucoseVal = getMarkerValue(glucose);
+  if (glucoseVal !== null && glucoseVal >= 100) {
+    notes.push(`Glucose is ${glucoseVal}. That may point toward blood sugar control issues, especially when paired with insulin and A1C.`);
+  }
+
+  const a1cVal = getMarkerValue(a1c);
+  if (a1cVal !== null) {
+    if (a1cVal >= 5.7) {
+      notes.push(`A1C is ${a1cVal}. This is worth paying attention to for blood sugar control and insulin resistance risk.`);
+    } else {
+      notes.push(`A1C is ${a1cVal}, which is a solid long-term blood sugar marker.`);
+    }
+  }
+
+  const insulinVal = getMarkerValue(insulin);
+  if (insulinVal !== null && insulinVal > 10) {
+    notes.push(`Fasting insulin is ${insulinVal}. Even when glucose looks okay, higher insulin can suggest insulin resistance is developing.`);
+  }
+
+  const crpVal = getMarkerValue(crp);
+  if (crpVal !== null) {
+    if (crpVal > 1) {
+      notes.push(`hs-CRP is ${crpVal}, suggesting inflammation is worth monitoring. Sleep, recovery, illness, and body-fat levels can affect this.`);
+    } else {
+      notes.push(`hs-CRP is ${crpVal}, which is encouraging from an inflammation standpoint.`);
+    }
+  }
+
+  const vitaminDVal = getMarkerValue(vitaminD);
+  if (vitaminDVal !== null) {
+    if (vitaminDVal < 30) {
+      notes.push(`Vitamin D is ${vitaminDVal}. That is commonly discussed for improvement with sunlight exposure or supplementation under clinician guidance.`);
+    } else {
+      notes.push(`Vitamin D is ${vitaminDVal}, which is a solid level to maintain.`);
+    }
+  }
+
+  const testosteroneVal = getMarkerValue(testosterone);
+  if (testosteroneVal !== null) {
+    if (testosteroneVal < 500) {
+      notes.push(`Total testosterone is ${testosteroneVal}. If symptoms exist, this is worth reviewing alongside free testosterone, SHBG, sleep, calories, and recovery.`);
+    } else {
+      notes.push(`Total testosterone is ${testosteroneVal}, which is a strong number to track over time.`);
+    }
+  }
+
+  const tshVal = getMarkerValue(tsh);
+  if (tshVal !== null && tshVal > 4) {
+    notes.push(`TSH is ${tshVal}. That may be worth discussing with your clinician alongside free T4, free T3, symptoms, and thyroid antibodies.`);
+  }
+
+  if (!notes.length) {
+    notes.push("Your lab panel is saved. Add more markers over time so the coaching becomes more useful.");
+  }
+
+  notes.push("This coaching is educational and trend-focused, not a diagnosis. Use it to guide questions for your clinician.");
+
+  return notes;
+}
+
+function getLibraryMarkerByLabel(label) {
+  return MARKER_LIBRARY.find((m) => m.label === label) || null;
+}
+
+function blankBloodworkMarker() {
+  return {
+    local_id: `${Date.now()}-${Math.random()}`,
+    marker_name: "",
+    marker_slug: "",
+    value: null,
+    value_numeric: null,
+    value_text: "",
+    unit: "",
+    reference_range: "",
+    reference_range_low: null,
+    reference_range_high: null,
+    optimal_range: "",
+    flag: "unknown",
+    category: "other",
+    notes: ""
+  };
+}
 export default function Home() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -161,32 +416,57 @@ export default function Home() {
   });
 
   const [inbody, setInbody] = useState({
-    scan_date: todayISO(),
-    weight: "",
-    skeletal_muscle_mass: "",
-    body_fat_mass: "",
-    percent_body_fat: "",
-    lean_body_mass: "",
-    bmi: "",
-    bmr: "",
-    ecw_tbw: "",
-    visceral_fat: "",
-    right_arm_lean: "",
-    left_arm_lean: "",
-    trunk_lean: "",
-    right_leg_lean: "",
-    left_leg_lean: "",
-    notes: ""
-  });
+
+  scan_date: todayISO(),
+
+  weight: "",
+
+  skeletal_muscle_mass: "",
+
+  body_fat_mass: "",
+
+  percent_body_fat: "",
+
+  lean_body_mass: "",
+
+  bmi: "",
+
+  bmr: "",
+
+  ecw_tbw: "",
+
+  visceral_fat: "",
+
+  right_arm_lean: "",
+
+  left_arm_lean: "",
+
+  trunk_lean: "",
+
+  right_leg_lean: "",
+
+  left_leg_lean: "",
+
+  notes: ""
+
+});
+
+const [inbodyFile, setInbodyFile] = useState(null);
 
   const [bloodwork, setBloodwork] = useState({
-    panel_date: todayISO(),
-    lab_name: "",
-    notes: ""
-  });
+  panel_date: todayISO(),
+  lab_name: ""
+});
 
-  const [inbodyFile, setInbodyFile] = useState(null);
-  const [bloodworkFile, setBloodworkFile] = useState(null);
+const [bloodworkMarkersDraft, setBloodworkMarkersDraft] = useState([
+  blankBloodworkMarker(),
+  blankBloodworkMarker(),
+  blankBloodworkMarker()
+]);
+
+const [bloodworkFile, setBloodworkFile] = useState(null);
+const [bloodworkRows, setBloodworkRows] = useState([]);
+const [bloodworkMarkers, setBloodworkMarkers] = useState([]);
 
   const [workouts, setWorkouts] = useState([]);
   const [macros, setMacros] = useState([]);
@@ -195,7 +475,6 @@ export default function Home() {
   const [timeline, setTimeline] = useState([]);
   const [peptides, setPeptides] = useState([]);
   const [inbodyRows, setInbodyRows] = useState([]);
-  const [bloodworkRows, setBloodworkRows] = useState([]);
 
   const [expandedWorkoutId, setExpandedWorkoutId] = useState(null);
   const [expandedMacroId, setExpandedMacroId] = useState(null);
@@ -248,84 +527,93 @@ export default function Home() {
   }
 
   async function loadAll() {
-    const userId = session.user.id;
+  const userId = session.user.id;
 
-    const [
-      workoutsRes,
-      macrosRes,
-      weightsRes,
-      photosRes,
-      timelineRes,
-      peptidesRes,
-      inbodyRes,
-      bloodworkRes
-    ] = await Promise.all([
-      supabase
-        .from("workouts")
-        .select("*")
-        .eq("user_id", userId)
-        .order("workout_date", { ascending: false })
-        .limit(50),
+  const [
+    workoutsRes,
+    macrosRes,
+    weightsRes,
+    photosRes,
+    timelineRes,
+    peptidesRes,
+    inbodyRes,
+    bloodworkRes,
+    bloodworkMarkersRes
+  ] = await Promise.all([
+    supabase
+      .from("workouts")
+      .select("*")
+      .eq("user_id", userId)
+      .order("workout_date", { ascending: false })
+      .limit(50),
 
-      supabase
-        .from("nutrition_logs")
-        .select("*")
-        .eq("user_id", userId)
-        .order("log_date", { ascending: false })
-        .limit(50),
+    supabase
+      .from("nutrition_logs")
+      .select("*")
+      .eq("user_id", userId)
+      .order("log_date", { ascending: false })
+      .limit(50),
 
-      supabase
-        .from("weigh_ins")
-        .select("*")
-        .eq("user_id", userId)
-        .order("weigh_in_date", { ascending: false })
-        .limit(50),
+    supabase
+      .from("weigh_ins")
+      .select("*")
+      .eq("user_id", userId)
+      .order("weigh_in_date", { ascending: false })
+      .limit(50),
 
-      supabase
-        .from("progress_photos")
-        .select("*")
-        .eq("user_id", userId)
-        .order("photo_date", { ascending: false })
-        .limit(50),
+    supabase
+      .from("progress_photos")
+      .select("*")
+      .eq("user_id", userId)
+      .order("photo_date", { ascending: false })
+      .limit(50),
 
-      supabase
-        .from("timeline_events")
-        .select("*")
-        .eq("user_id", userId)
-        .order("date", { ascending: false })
-        .limit(100),
+    supabase
+      .from("timeline_events")
+      .select("*")
+      .eq("user_id", userId)
+      .order("date", { ascending: false })
+      .limit(100),
 
-      supabase
-        .from("peptide_logs")
-        .select("*")
-        .eq("user_id", userId)
-        .order("log_date", { ascending: false })
-        .limit(50),
+    supabase
+      .from("peptide_logs")
+      .select("*")
+      .eq("user_id", userId)
+      .order("log_date", { ascending: false })
+      .limit(50),
 
-      supabase
-        .from("inbody_scans")
-        .select("*")
-        .eq("user_id", userId)
-        .order("scan_date", { ascending: false })
-        .limit(50),
+    supabase
+      .from("inbody_scans")
+      .select("*")
+      .eq("user_id", userId)
+      .order("scan_date", { ascending: false })
+      .limit(50),
 
-      supabase
-        .from("bloodwork_panels")
-        .select("*")
-        .eq("user_id", userId)
-        .order("panel_date", { ascending: false })
-        .limit(50)
-    ]);
+    supabase
+      .from("bloodwork_panels")
+      .select("*")
+      .eq("user_id", userId)
+      .order("panel_date", { ascending: false })
+      .limit(50),
 
-    setWorkouts(workoutsRes.data || []);
-    setMacros(macrosRes.data || []);
-    setWeights(weightsRes.data || []);
-    setPhotos(photosRes.data || []);
-    setTimeline(timelineRes.data || []);
-    setPeptides(peptidesRes.data || []);
-    setInbodyRows(inbodyRes.data || []);
-    setBloodworkRows(bloodworkRes.data || []);
-  }
+    supabase
+      .from("bloodwork_markers")
+      .select("*")
+      .eq("user_id", userId)
+      .order("panel_date", { ascending: false })
+      .limit(500)
+  ]);
+
+  setWorkouts(workoutsRes.data || []);
+  setMacros(macrosRes.data || []);
+  setWeights(weightsRes.data || []);
+  setPhotos(photosRes.data || []);
+  setTimeline(timelineRes.data || []);
+  setPeptides(peptidesRes.data || []);
+  setInbodyRows(inbodyRes.data || []);
+  setBloodworkRows(bloodworkRes.data || []);
+  setBloodworkMarkers(bloodworkMarkersRes.data || []);
+}
 
   async function uploadToBucket(bucket, file, folder = "") {
     if (!file || !session?.user?.id) return null;
@@ -565,44 +853,147 @@ export default function Home() {
       setMessage(err.message);
     }
   }
+function updateBloodworkDraftMarker(localId, field, value) {
+  setBloodworkMarkersDraft((current) =>
+    current.map((marker) => {
+      if (marker.local_id !== localId) return marker;
 
-  async function saveBloodwork(e) {
-    e.preventDefault();
-    setMessage("");
+      const updated = { ...marker, [field]: value };
 
-    try {
-      const reportPath = await uploadToBucket(
-        "bloodwork-reports",
+      if (field === "marker_name") {
+        const libraryMarker = getLibraryMarkerByLabel(value);
+        if (libraryMarker) {
+          updated.marker_name = libraryMarker.label;
+          updated.marker_slug = libraryMarker.slug;
+          updated.category = libraryMarker.category;
+          if (!updated.unit) {
+            updated.unit = libraryMarker.unit || "";
+          }
+        } else {
+          updated.marker_slug = makeSlug(value);
+        }
+      }
+
+      if (field === "value" || field === "value_numeric") {
+        const numeric = safeNumber(value);
+        updated.value = numeric;
+        updated.value_numeric = numeric;
+        updated.value_text =
+          value === "" || value === null || value === undefined ? "" : String(value);
+      }
+
+      return updated;
+    })
+  );
+}
+
+function removeBloodworkDraftMarker(localId) {
+  setBloodworkMarkersDraft((current) =>
+    current.length <= 1
+      ? [blankBloodworkMarker()]
+      : current.filter((marker) => marker.local_id !== localId)
+  );
+}
+
+function addBlankBloodworkDraftMarker() {
+  setBloodworkMarkersDraft((current) => [...current, blankBloodworkMarker()]);
+}
+ async function saveBloodwork(e) {
+  e.preventDefault();
+  setMessage("");
+
+  try {
+    const cleanedRows = bloodworkMarkersDraft
+      .map((marker) => ({
+        user_id: session.user.id,
+        panel_id: null,
+        panel_date: bloodwork.panel_date,
+        lab_name: bloodwork.lab_name || null,
+        marker_name: String(marker.marker_name || "").trim(),
+        marker_slug: marker.marker_slug || makeSlug(marker.marker_name || ""),
+        value: safeNumber(marker.value),
+        value_numeric: safeNumber(marker.value_numeric ?? marker.value),
+        value_text:
+          marker.value_text ??
+          (safeNumber(marker.value_numeric ?? marker.value) !== null
+            ? String(safeNumber(marker.value_numeric ?? marker.value))
+            : ""),
+        unit: marker.unit || "",
+        reference_range: marker.reference_range || "",
+        reference_range_low: safeNumber(marker.reference_range_low),
+        reference_range_high: safeNumber(marker.reference_range_high),
+        optimal_range: marker.optimal_range || "",
+        flag: marker.flag || "unknown",
+        category: marker.category || "other",
+        notes: marker.notes || ""
+      }))
+      .filter((marker) => marker.marker_name);
+
+    if (!cleanedRows.length) {
+      setMessage("Enter at least one bloodwork marker before saving.");
+      return;
+    }
+
+    let reportPath = null;
+    if (bloodworkFile) {
+      reportPath = await uploadToBucket(
+        "lab-reports",
         bloodworkFile,
         "reports"
       );
+    }
 
-      const { error } = await supabase.from("bloodwork_panels").insert({
+    const summary = buildCoaching(cleanedRows);
+
+    const { data: panelRow, error: panelError } = await supabase
+      .from("bloodwork_panels")
+      .insert({
         user_id: session.user.id,
         panel_date: bloodwork.panel_date,
         lab_name: bloodwork.lab_name || null,
-        report_pdf: reportPath,
-        notes: bloodwork.notes || null
-      });
+       report_pdf: reportPath,
+        notes: summary.join("\n")
+      })
+      .select()
+      .single();
 
-      if (error) {
-        setMessage(error.message);
-        return;
-      }
-
-      setBloodwork({
-        panel_date: todayISO(),
-        lab_name: "",
-        notes: ""
-      });
-
-      setBloodworkFile(null);
-      setMessage("Bloodwork uploaded.");
-      loadAll();
-    } catch (err) {
-      setMessage(err.message);
+    if (panelError) {
+      setMessage(panelError.message);
+      return;
     }
+
+    const rowsToInsert = cleanedRows.map((marker) => ({
+      ...marker,
+      panel_id: panelRow.id
+    }));
+
+    const { error: insertError } = await supabase
+      .from("bloodwork_markers")
+      .insert(rowsToInsert);
+
+    if (insertError) {
+      setMessage(insertError.message);
+      return;
+    }
+
+    setBloodwork({
+      panel_date: todayISO(),
+      lab_name: ""
+    });
+
+    setBloodworkMarkersDraft([
+      blankBloodworkMarker(),
+      blankBloodworkMarker(),
+      blankBloodworkMarker()
+    ]);
+
+    setBloodworkFile(null);
+    setMessage(`Bloodwork panel saved with ${rowsToInsert.length} markers.`);
+    loadAll();
+  } catch (err) {
+    setMessage(err.message);
   }
+}
 
   const latestWeight = useMemo(
     () => (weights[0]?.weight_lb ? `${weights[0].weight_lb} lb` : "—"),
@@ -629,7 +1020,7 @@ export default function Home() {
     }).length;
   }, [workouts]);
 
-  const avgCalories7 = useMemo(() => {
+    const avgCalories7 = useMemo(() => {
     if (!macros.length) return "—";
     const vals = macros
       .slice(0, 7)
@@ -638,6 +1029,15 @@ export default function Home() {
     if (!vals.length) return "—";
     return `${Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)}`;
   }, [macros]);
+
+  const bloodworkMarkersByPanelId = useMemo(() => {
+    const map = {};
+    for (const marker of bloodworkMarkers) {
+      if (!map[marker.panel_id]) map[marker.panel_id] = [];
+      map[marker.panel_id].push(marker);
+    }
+    return map;
+  }, [bloodworkMarkers]);
 
   if (loading) {
     return (
@@ -763,7 +1163,7 @@ export default function Home() {
                   <li>Front / side / back photos upload to storage</li>
                   <li>Peptides save to Supabase</li>
                   <li>InBody saves to Supabase</li>
-                  <li>Bloodwork uploads save to Supabase</li>
+                  <li>Bloodwork panels + markers save to Supabase</li>
                   <li>Timeline reads from your database view</li>
                 </ul>
               </div>
@@ -1405,498 +1805,309 @@ export default function Home() {
           </div>
         )}
 
-        {// SemperFit Full Working Page
-// pages/index.js
-// Clean consolidated build (~500 lines) with Supplements, Bloodwork markers, signed URLs
+        {tab === "bloodwork" && (
+  <div className="grid grid2">
+    <form className="card" onSubmit={saveBloodwork}>
+      <div className="kicker">Manual entry</div>
+      <h2>Save bloodwork panel</h2>
 
-import { useEffect, useMemo, useState } from "react";
-import { supabase } from "../lib/supabase";
+      <label>Panel date</label>
+      <input
+        type="date"
+        value={bloodwork.panel_date}
+        onChange={(e) =>
+          setBloodwork({ ...bloodwork, panel_date: e.target.value })
+        }
+        required
+      />
 
-const tabs = [
-  { id: "dashboard", label: "Dashboard" },
-  { id: "workouts", label: "Workouts" },
-  { id: "macros", label: "Macros" },
-  { id: "weighins", label: "Weigh‑Ins + Photos" },
-  { id: "supplements", label: "Supplements" },
-  { id: "inbody", label: "InBody" },
-  { id: "bloodwork", label: "Bloodwork" },
-  { id: "timeline", label: "Timeline" }
-];
+      <label>Lab name</label>
+      <input
+        placeholder="Function Health, Quest, Labcorp"
+        value={bloodwork.lab_name}
+        onChange={(e) =>
+          setBloodwork({ ...bloodwork, lab_name: e.target.value })
+        }
+      />
 
-const MARKERS = [
-  "Apolipoprotein B (ApoB)",
-  "Apolipoprotein A1 (ApoA1)",
-  "Lipoprotein(a)",
-  "LDL Cholesterol",
-  "HDL Cholesterol",
-  "Triglycerides",
-  "Total Cholesterol",
-  "Non-HDL Cholesterol",
-  "Glucose",
-  "Hemoglobin A1C",
-  "Insulin",
-  "C-Peptide",
-  "Uric Acid",
-  "hs-CRP",
-  "Homocysteine",
-  "Ferritin",
-  "Iron",
-  "TIBC",
-  "Iron Saturation",
-  "Vitamin D",
-  "Vitamin B12",
-  "Folate",
-  "Magnesium",
-  "Calcium",
-  "Sodium",
-  "Potassium",
-  "Chloride",
-  "Carbon Dioxide",
-  "Total Testosterone",
-  "Free Testosterone",
-  "Bioavailable Testosterone",
-  "SHBG",
-  "Estradiol",
-  "DHEA-S",
-  "LH",
-  "FSH",
-  "Prolactin",
-  "PSA Total",
-  "PSA Free",
-  "TSH",
-  "Free T4",
-  "Free T3",
-  "AST",
-  "ALT",
-  "Alkaline Phosphatase",
-  "Bilirubin Total",
-  "Albumin",
-  "Globulin",
-  "Total Protein",
-  "GGT",
-  "Creatinine",
-  "eGFR",
-  "BUN",
-  "Cystatin C",
-  "White Blood Cell Count",
-  "Red Blood Cell Count",
-  "Hemoglobin",
-  "Hematocrit",
-  "Platelet Count"
-];
+      <label>Attach PDF for record keeping (optional)</label>
+      <input
+        type="file"
+        accept=".pdf,application/pdf"
+        onChange={(e) => setBloodworkFile(e.target.files[0])}
+      />
 
-function todayISO() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function safeNumber(v) {
-  const n = Number(v);
-  return Number.isNaN(n) ? null : n;
-}
-
-async function signedUrl(bucket, path) {
-  const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 60);
-  return data?.signedUrl || null;
-}
-
-export default function Home() {
-  const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState("dashboard");
-  const [message, setMessage] = useState("");
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const [workouts, setWorkouts] = useState([]);
-  const [macros, setMacros] = useState([]);
-  const [weights, setWeights] = useState([]);
-  const [timeline, setTimeline] = useState([]);
-
-  const [workout, setWorkout] = useState({
-    workout_date: todayISO(),
-    workout_type: "",
-    duration_minutes: ""
-  });
-
-  const [macro, setMacro] = useState({
-    log_date: todayISO(),
-    calories: "",
-    protein: "",
-    carbs: "",
-    fat: ""
-  });
-
-  const [checkin, setCheckin] = useState({
-    weigh_in_date: todayISO(),
-    weight_lb: ""
-  });
-
-  const [bloodPanel, setBloodPanel] = useState({
-    panel_date: todayISO(),
-    lab_name: ""
-  });
-
-  const [markers, setMarkers] = useState([
-    { name: "", value: "", unit: "" }
-  ]);
-
-  const [bloodFile, setBloodFile] = useState(null);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
-
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => {
-      setSession(s);
-      setLoading(false);
-    });
-
-    return () => data.subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (session?.user) loadAll();
-  }, [session]);
-
-  async function signIn() {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setMessage(error ? error.message : "Signed in");
-  }
-
-  async function signUp() {
-    const { error } = await supabase.auth.signUp({ email, password });
-    setMessage(error ? error.message : "Account created");
-  }
-
-  async function signOut() {
-    await supabase.auth.signOut();
-  }
-
-  async function loadAll() {
-    const id = session.user.id;
-
-    const [w, m, wt, t] = await Promise.all([
-      supabase.from("workouts").select("*").eq("user_id", id),
-      supabase.from("nutrition_logs").select("*").eq("user_id", id),
-      supabase.from("weigh_ins").select("*").eq("user_id", id),
-      supabase.from("timeline_events").select("*").eq("user_id", id)
-    ]);
-
-    setWorkouts(w.data || []);
-    setMacros(m.data || []);
-    setWeights(wt.data || []);
-    setTimeline(t.data || []);
-  }
-
-  async function saveWorkout(e) {
-    e.preventDefault();
-
-    const { error } = await supabase.from("workouts").insert({
-      user_id: session.user.id,
-      workout_date: workout.workout_date,
-      workout_type: workout.workout_type,
-      duration_minutes: safeNumber(workout.duration_minutes)
-    });
-
-    if (error) return setMessage(error.message);
-
-    setMessage("Workout saved");
-    loadAll();
-  }
-
-  async function saveMacro(e) {
-    e.preventDefault();
-
-    const { error } = await supabase.from("nutrition_logs").insert({
-      user_id: session.user.id,
-      log_date: macro.log_date,
-      calories: safeNumber(macro.calories),
-      protein: safeNumber(macro.protein),
-      carbs: safeNumber(macro.carbs),
-      fat: safeNumber(macro.fat)
-    });
-
-    if (error) return setMessage(error.message);
-
-    setMessage("Macros saved");
-    loadAll();
-  }
-
-  async function saveCheckin(e) {
-    e.preventDefault();
-
-    const { error } = await supabase.from("weigh_ins").insert({
-      user_id: session.user.id,
-      weigh_in_date: checkin.weigh_in_date,
-      weight_lb: safeNumber(checkin.weight_lb)
-    });
-
-    if (error) return setMessage(error.message);
-
-    setMessage("Check‑in saved");
-    loadAll();
-  }
-
-  function updateMarker(i, field, value) {
-    const copy = [...markers];
-    copy[i][field] = value;
-    setMarkers(copy);
-  }
-
-  function addMarker() {
-    setMarkers([...markers, { name: "", value: "", unit: "" }]);
-  }
-
-  async function saveBloodwork(e) {
-    e.preventDefault();
-
-    let reportPath = null;
-
-    if (bloodFile) {
-      const path = `${session.user.id}/labs/${Date.now()}-${bloodFile.name}`;
-
-      const { error } = await supabase.storage
-        .from("lab-reports")
-        .upload(path, bloodFile);
-
-      if (error) return setMessage(error.message);
-
-      reportPath = path;
-    }
-
-    const { data: panel } = await supabase
-      .from("bloodwork_panels")
-      .insert({
-        user_id: session.user.id,
-        panel_date: bloodPanel.panel_date,
-        lab_name: bloodPanel.lab_name,
-        report_file: reportPath
-      })
-      .select()
-      .single();
-
-    const rows = markers
-      .filter((m) => m.name)
-      .map((m) => ({
-        user_id: session.user.id,
-        panel_id: panel.id,
-        panel_date: bloodPanel.panel_date,
-        marker_name: m.name,
-        value_numeric: safeNumber(m.value),
-        value_text: m.value,
-        unit: m.unit
-      }));
-
-    await supabase.from("bloodwork_markers").insert(rows);
-
-    setMarkers([{ name: "", value: "", unit: "" }]);
-    setMessage("Bloodwork saved");
-  }
-
-  const latestWeight = useMemo(() => weights[0]?.weight_lb || "—", [weights]);
-
-  if (loading) return <div>Loading...</div>;
-
-  if (!session) {
-    return (
-      <div>
-        <h1>SemperFit</h1>
-        <input placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
-        <input placeholder="Password" type="password" onChange={(e) => setPassword(e.target.value)} />
-        <button onClick={signIn}>Sign In</button>
-        <button onClick={signUp}>Create Account</button>
-        <p>{message}</p>
+      <div style={{ marginTop: 16, marginBottom: 8 }}>
+        <div className="kicker">Markers</div>
+        <h2 style={{ marginTop: 4 }}>Enter markers manually</h2>
+        <p className="muted">
+          Use the searchable dropdown for standardized names. You can also type a custom marker.
+        </p>
       </div>
-    );
-  }
 
-  return (
-    <div>
-      <h1>SemperFit</h1>
+      <datalist id="marker-options">
+        {MARKER_OPTIONS.map((option) => (
+          <option key={option} value={option} />
+        ))}
+      </datalist>
 
-      {tabs.map((t) => (
-        <button key={t.id} onClick={() => setTab(t.id)}>
-          {t.label}
-        </button>
-      ))}
-
-      {tab === "dashboard" && (
-        <div>
-          <h2>Dashboard</h2>
-          <p>Latest Weight: {latestWeight}</p>
-        </div>
-      )}
-
-      {tab === "workouts" && (
-        <form onSubmit={saveWorkout}>
-          <h2>Log Workout</h2>
-          <input type="date" value={workout.workout_date} onChange={(e)=>setWorkout({...workout,workout_date:e.target.value})}/>
-          <input placeholder="Type" onChange={(e)=>setWorkout({...workout,workout_type:e.target.value})}/>
-          <input placeholder="Minutes" onChange={(e)=>setWorkout({...workout,duration_minutes:e.target.value})}/>
-          <button>Save</button>
-        </form>
-      )}
-
-      {tab === "macros" && (
-        <form onSubmit={saveMacro}>
-          <h2>Log Macros</h2>
-          <input type="date" value={macro.log_date} onChange={(e)=>setMacro({...macro,log_date:e.target.value})}/>
-          <input placeholder="Calories" onChange={(e)=>setMacro({...macro,calories:e.target.value})}/>
-          <input placeholder="Protein" onChange={(e)=>setMacro({...macro,protein:e.target.value})}/>
-          <input placeholder="Carbs" onChange={(e)=>setMacro({...macro,carbs:e.target.value})}/>
-          <input placeholder="Fat" onChange={(e)=>setMacro({...macro,fat:e.target.value})}/>
-          <button>Save</button>
-        </form>
-      )}
-
-      {tab === "weighins" && (
-        <form onSubmit={saveCheckin}>
-          <h2>Weigh‑In</h2>
-          <input type="date" value={checkin.weigh_in_date} onChange={(e)=>setCheckin({...checkin,weigh_in_date:e.target.value})}/>
-          <input placeholder="Weight" onChange={(e)=>setCheckin({...checkin,weight_lb:e.target.value})}/>
-          <button>Save</button>
-        </form>
-      )}
-
-      {tab === "supplements" && (
-        <div>
-          <h2>Supplements</h2>
-          <p>Supplement logging uses the same database table previously used for peptides.</p>
-        </div>
-      )}
-
-      {tab === "bloodwork" && (
-        <form onSubmit={saveBloodwork}>
-          <h2>Bloodwork Panel</h2>
-
-          <div style={{marginBottom:20}}>
-            <label>Panel Date</label>
-            <input
-              type="date"
-              value={bloodPanel.panel_date}
-              onChange={(e)=>setBloodPanel({...bloodPanel,panel_date:e.target.value})}
-            />
-          </div>
-
-          <div style={{marginBottom:20}}>
-            <label>Lab Name</label>
-            <input
-              placeholder="Quest, Labcorp, Function Health, etc"
-              value={bloodPanel.lab_name}
-              onChange={(e)=>setBloodPanel({...bloodPanel,lab_name:e.target.value})}
-            />
-          </div>
-
-          <div style={{marginBottom:20}}>
-            <label>Attach PDF (optional)</label>
-            <input
-              type="file"
-              accept=".pdf"
-              onChange={(e)=>setBloodFile(e.target.files[0])}
-            />
-          </div>
-
-          <h3>Markers</h3>
-
-          {markers.map((m,i)=> (
+      <div className="stack">
+        {bloodworkMarkersDraft.map((marker) => (
+          <div
+            key={marker.local_id}
+            style={{
+              border: "1px solid rgba(255,255,255,.08)",
+              borderRadius: 14,
+              padding: 14,
+              background: "rgba(255,255,255,.02)"
+            }}
+          >
             <div
-              key={i}
               style={{
-                border:"1px solid #ddd",
-                padding:10,
-                marginBottom:10,
-                borderRadius:8
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 12,
+                marginBottom: 12
               }}
             >
+              <strong>{marker.marker_name || "New marker"}</strong>
+              <button
+                type="button"
+                className="btn secondary"
+                onClick={() => removeBloodworkDraftMarker(marker.local_id)}
+              >
+                Remove
+              </button>
+            </div>
 
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                gap: 12
+              }}
+            >
               <div>
-                <label>Marker</label>
-                <select
-                  value={m.name}
-                  onChange={(e)=>updateMarker(i,"name",e.target.value)}
-                >
-                  <option value="">Select Marker</option>
-                  {MARKERS.map((mk)=> (
-                    <option key={mk} value={mk}>{mk}</option>
-                  ))}
-                </select>
+                <label>Marker Name</label>
+                <input
+                  type="text"
+                  list="marker-options"
+                  value={marker.marker_name}
+                  onChange={(e) =>
+                    updateBloodworkDraftMarker(
+                      marker.local_id,
+                      "marker_name",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Start typing a marker..."
+                />
               </div>
 
               <div>
                 <label>Value</label>
                 <input
-                  placeholder="Value"
-                  value={m.value}
-                  onChange={(e)=>updateMarker(i,"value",e.target.value)}
+                  type="text"
+                  value={marker.value_text}
+                  onChange={(e) =>
+                    updateBloodworkDraftMarker(
+                      marker.local_id,
+                      "value",
+                      e.target.value
+                    )
+                  }
                 />
               </div>
 
               <div>
                 <label>Unit</label>
                 <input
-                  placeholder="mg/dL, ng/mL, etc"
-                  value={m.unit}
-                  onChange={(e)=>updateMarker(i,"unit",e.target.value)}
+                  type="text"
+                  value={marker.unit}
+                  onChange={(e) =>
+                    updateBloodworkDraftMarker(
+                      marker.local_id,
+                      "unit",
+                      e.target.value
+                    )
+                  }
                 />
               </div>
 
+              <div>
+                <label>Reference Range</label>
+                <input
+                  type="text"
+                  value={marker.reference_range}
+                  onChange={(e) =>
+                    updateBloodworkDraftMarker(
+                      marker.local_id,
+                      "reference_range",
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
+
+              <div>
+                <label>Flag</label>
+                <select
+                  value={marker.flag}
+                  onChange={(e) =>
+                    updateBloodworkDraftMarker(
+                      marker.local_id,
+                      "flag",
+                      e.target.value
+                    )
+                  }
+                >
+                  <option value="unknown">unknown</option>
+                  <option value="normal">normal</option>
+                  <option value="high">high</option>
+                  <option value="low">low</option>
+                  <option value="borderline">borderline</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Category</label>
+                <input
+                  type="text"
+                  value={marker.category}
+                  onChange={(e) =>
+                    updateBloodworkDraftMarker(
+                      marker.local_id,
+                      "category",
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
             </div>
-          ))}
 
-          <button type="button" onClick={addMarker}>
-            Add Marker
-          </button>
-
-          <div style={{marginTop:20}}>
-            <button type="submit">Save Bloodwork Panel</button>
+            <div className="muted" style={{ marginTop: 10 }}>
+              slug: {marker.marker_slug || makeSlug(marker.marker_name || "")}
+            </div>
           </div>
+        ))}
+      </div>
 
-        </form>
-      )}
-          />
+      <div className="buttonRow" style={{ marginTop: 14 }}>
+        <button
+          type="button"
+          className="btn secondary"
+          onClick={addBlankBloodworkDraftMarker}
+        >
+          Add Marker
+        </button>
 
-          <input
-            placeholder="Lab Name"
-            onChange={(e)=>setBloodPanel({...bloodPanel,lab_name:e.target.value})}
-          />
+        <button className="btn" type="submit">
+          Save Bloodwork Panel
+        </button>
+      </div>
+    </form>
 
-          <input type="file" accept=".pdf" onChange={(e)=>setBloodFile(e.target.files[0])}/>
+    <ExpandableHistoryCard
+      title="Recent bloodwork panels"
+      kicker="History"
+      items={bloodworkRows}
+      expandedId={expandedBloodworkId}
+      setExpandedId={setExpandedBloodworkId}
+      renderSummary={(item, isOpen) => {
+        const panelMarkers = bloodworkMarkersByPanelId[item.id] || [];
+        return (
+          <div className="listRow" style={{ borderBottom: "none", padding: 0 }}>
+            <strong>{item.lab_name || "Bloodwork panel"}</strong>
+            <span>
+              {panelMarkers.length} markers
+              {item.notes ? " · Coaching saved" : ""}
+            </span>
+            <small>{isOpen ? "Hide" : item.panel_date}</small>
+          </div>
+        );
+      }}
+      renderExpanded={(item) => {
+        const panelMarkers = bloodworkMarkersByPanelId[item.id] || [];
 
-          {markers.map((m,i)=> (
-            <div key={i}>
-              <select value={m.name} onChange={(e)=>updateMarker(i,"name",e.target.value)}>
-                <option value="">Select Marker</option>
-                {MARKERS.map((mk)=> <option key={mk}>{mk}</option>)}
-              </select>
+        return (
+          <>
+            <DetailRow label="Panel date" value={item.panel_date} />
+            <DetailRow label="Lab name" value={item.lab_name} />
+            <div style={{ padding: "8px 0" }}>
+              <div className="muted" style={{ marginBottom: 8 }}>
+                Attached report
+              </div>
+              {item.report_pdf ? (
+  {item.report_pdf ? (
 
-              <input placeholder="Value" onChange={(e)=>updateMarker(i,"value",e.target.value)}/>
-              <input placeholder="Unit" onChange={(e)=>updateMarker(i,"unit",e.target.value)}/>
+  <a
+
+    href={getStorageUrl("lab-reports", item.report_pdf)}
+
+    target="_blank"
+
+    rel="noreferrer"
+
+  >
+
+    View Report
+
+  </a>
+
+) : (
+
+  <div>No file</div>
+
+)}
+) : (
+                <div>No file</div>
+              )}
             </div>
-          ))}
 
-          <button type="button" onClick={addMarker}>Add Marker</button>
+            <div style={{ paddingTop: 8 }}>
+              <div className="muted" style={{ marginBottom: 8 }}>
+                Markers
+              </div>
+              {!panelMarkers.length ? (
+                <div>No markers</div>
+              ) : (
+                <div className="stack">
+                  {panelMarkers.map((marker) => (
+                    <div
+                      key={marker.id}
+                      style={{
+                        border: "1px solid rgba(255,255,255,.08)",
+                        borderRadius: 12,
+                        padding: 12,
+                        background: "rgba(255,255,255,.02)"
+                      }}
+                    >
+                      <div className="listRow" style={{ borderBottom: "none", padding: 0 }}>
+                        <strong>{marker.marker_name}</strong>
+                        <span>
+                          {marker.value_numeric ?? marker.value_text ?? marker.value ?? "—"}{" "}
+                          {marker.unit || ""}
+                        </span>
+                        <small>{marker.flag || "unknown"}</small>
+                      </div>
+                      {marker.reference_range ? (
+                        <div className="muted" style={{ marginTop: 6 }}>
+                          Range: {marker.reference_range}
+                        </div>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          <button>Save Panel</button>
-        </form>
-      )}
-
-      {tab === "timeline" && (
-        <div>
-          <h2>Timeline</h2>
-          {timeline.map((t,i)=>(<div key={i}>{t.title}</div>))}
-        </div>
-      )}
-
-      <p>{message}</p>
-
-      <button onClick={signOut}>Sign Out</button>
-    </div>
-  );
-}
-
+            <DetailRow label="Coaching" value={item.notes} />
+          </>
+        );
+      }}
+    />
+  </div>
+)}
 
         {tab === "timeline" && (
           <ExpandableHistoryCard
