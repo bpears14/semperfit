@@ -2039,25 +2039,15 @@ function addBlankBloodworkDraftMarker() {
               </div>
               {item.report_pdf ? (
   {item.report_pdf ? (
-
   <a
-
     href={getStorageUrl("lab-reports", item.report_pdf)}
-
     target="_blank"
-
     rel="noreferrer"
-
   >
-
     View Report
-
   </a>
-
 ) : (
-
   <div>No file</div>
-
 )}
 ) : (
                 <div>No file</div>
