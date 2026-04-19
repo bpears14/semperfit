@@ -1466,21 +1466,21 @@ function addBlankBloodworkDraftMarker() {
                     </div>
 
                     <div style={{ padding: "8px 0" }}>
-                      <div className="muted" style={{ marginBottom: 8 }}>
-                        Back photo
-                      </div>
-                      {backUrl ? (
-                        <a href={backUrl} target="_blank" rel="noreferrer">
-                          <img
-                            src={backUrl}
-                            alt="Back progress"
-                            style={{ width: 180, borderRadius: 12, display: "block" }}
-                          />
-                        </a>
-                      ) : (
-                        <div>No file</div>
-                      )}
-                    </div>
+  <div className="muted" style={{ marginBottom: 8 }}>
+    Attached report
+  </div>
+  {item.report_pdf ? (
+    <a
+      href={getStorageUrl("lab-reports", item.report_pdf)}
+      target="_blank"
+      rel="noreferrer"
+    >
+      View Report
+    </a>
+  ) : (
+    <div>No file</div>
+  )}
+</div>
                   </>
                 );
               }}
